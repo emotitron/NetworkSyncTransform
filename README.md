@@ -6,7 +6,7 @@ Until the project is set up, here is the current FREE release:
 ## Free NST Core Download
 You are welcome to use this library for games, however scripts/components not explicity marked with MIT licenses may not sold be part of assets libraries.
 
-[NST Free 5.7.05 Release - Unity Package Download](https://github.com/emotitron/NetworkSyncTransform/blob/master/NST_RELEASE_5705_FREE.unitypackage?raw=true)
+[**NST Free 5.7.05 Release** - Unity Package Download](https://github.com/emotitron/NetworkSyncTransform/blob/master/NST_RELEASE_5705_FREE.unitypackage?raw=true)
 
 ## NST Add-ons on Unity Asset Store
 These are not required, but they can be purchased on the asset store if you would like to help contribute to this project, or just desire the functionality and would rather not write it yourself.
