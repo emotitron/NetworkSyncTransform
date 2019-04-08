@@ -1,0 +1,372 @@
+﻿//Copyright 2018, Davin Carten, All rights reserved
+
+using UnityEngine;
+using emotitron.Compression;
+using emotitron.Utilities.GUIUtilities;
+using System.Collections.Generic;
+using System;
+using Photon;
+using Photon.Realtime;
+using Photon.Pun;
+using ExitGames.Client.Photon;
+using emotitron.Debugging;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+namespace emotitron.NST
+{
+	// ver 1
+	/// <summary>
+	/// The UNET version of this interface for the NSTMaster - unifying code to work with both UNET and Photon.
+	/// </summary>
+	[DisallowMultipleComponent]
+	[AddComponentMenu("")]
+	public class MasterNetAdapter : MonoBehaviourPunCallbacks, IOnEventCallback // Photon.PunBehaviour //, INSTMasterAdapter
+	{
+		[HideInInspector]
+		public static bool networkStarted;
+
+		public static MasterNetAdapter single;
+		public const string ADAPTER_NAME = "PUN2";
+
+		public const NetworkLibrary NET_LIB = NetworkLibrary.PUN2;
+
+		/// <summary>
+		/// Attribute for getting the NET_LIB value, without throwing warnings about unreachable code.
+		/// </summary>		
+		public static NetworkLibrary NetLib { get { return NET_LIB; } }
+
+		public const NetworkModel NET_MODEL = NetworkModel.MasterClient;
+
+		//private NSTMasterSettings nstMasterSettings;
+
+		// TODO this likely needs an actual test
+		public static int MasterClientId { get { return PhotonNetwork.MasterClient.ActorNumber; } }
+
+		// Interfaced fields
+		public NetworkLibrary NetLibrary { get { return NetworkLibrary.PUN2; } }
+		public static NetworkLibrary NetworkLibrary { get { return NetworkLibrary.PUN2; } }
+
+		public static bool Connected { get { return PhotonNetwork.IsConnected; } }
+		public static bool ReadyToSend { get { return PhotonNetwork.IsMasterClient || PhotonNetwork.IsConnectedAndReady; } }
+		//public static bool ReadyToSend { get { return PhotonNetwork.isMasterClient || PhotonNetwork.isNonMasterClientInRoom; } }
+		public static bool ServerIsActive { get { return PhotonNetwork.IsMasterClient; } }
+		//public static bool ClientIsActive { get { return PhotonNetwork.isNonMasterClientInRoom; } }
+		public static bool ClientIsActive { get { return PhotonNetwork.InRoom; } }
+		public static bool NetworkIsActive { get { return PhotonNetwork.IsMasterClient || PhotonNetwork.InRoom; } }
+		/// <summary> Cached value for defaultAuthority since this is hotpath </summary>
+
+		public const byte LowestMsgTypeId = 0;
+		public const byte HighestMsgTypeId = 199;
+		public const byte DefaultMsgTypeId = 190;
+
+		private static bool isServerClient;
+
+		public bool IsRegistered { get { return isRegistered; } set { isRegistered = value; } }
+
+		#region Callback Interfaces
+
+		[HideInInspector] public static List<Component> iNetEvents = new List<Component>();
+		[HideInInspector] public static List<Component> iOnConnect = new List<Component>();
+		[HideInInspector] public static List<Component> iOnStartServer = new List<Component>();
+		[HideInInspector] public static List<Component> iOnStartClient = new List<Component>();
+		[HideInInspector] public static List<Component> iOnStartLocalPlayer = new List<Component>();
+		[HideInInspector] public static List<Component> iOnNetworkDestroy = new List<Component>();
+		[HideInInspector] public static List<Component> iOnJoinRoom = new List<Component>();
+		[HideInInspector] public static List<Component> iOnJoinRoomFailed = new List<Component>();
+
+		public static void RegisterCallbackInterfaces(Component obj)
+		{
+			MasterNetCommon.RegisterCallbackInterfaces(obj);
+		}
+
+		public static void UnregisterCallbackInterfaces(Component obj)
+		{
+			MasterNetCommon.UnregisterCallbackInterfaces(obj);
+		}
+
+		#endregion
+
+		// Statics
+		private static short masterMsgTypeId;
+		private static bool isRegistered;
+
+#if UNITY_EDITOR
+
+		/// <summary>
+		/// Add a NetworkIdentity to the supplied NSTMaster gameobject. Sets localPlayerAuth to false (master isn't a player)
+		/// </summary>
+		/// <param name="go"></param>
+		public static bool AddRequiredEntityComponentToMaster(GameObject go)
+		{
+			// PUN doesn't need a PhotonView on the master
+			return false;
+		}
+
+		public static void PurgeLibSpecificComponents()
+		{
+			NetAdapterTools.PurgeTypeFromEverywhere<PhotonTransformView>();
+			NetAdapterTools.PurgeTypeFromEverywhere<PhotonRigidbodyView>();
+			NetAdapterTools.PurgeTypeFromEverywhere<PhotonAnimatorView>();
+			NetAdapterTools.PurgeTypeFromEverywhere<PhotonView>();
+		}
+
+		public static void AddNstEntityComponentsEverywhere()
+		{
+			NetAdapterTools.AddComponentsWhereverOtherComponentIsFound<NetworkSyncTransform, NSTNetAdapter, PhotonView>();
+		}
+
+		public static void AddLibrarySpecificEntityComponent(GameObject go)
+		{
+			if (!go.GetComponent<PhotonView>())
+				go.AddComponent<PhotonView>();
+		}
+
+
+#endif
+
+		static RaiseEventOptions optsOthers;
+		static RaiseEventOptions optsSvr;
+		static SendOptions sendOpts;
+
+		private void Awake()
+		{
+			isServerClient = NetLibrarySettings.Single.defaultAuthority == DefaultAuthority.ServerAuthority;
+
+			optsOthers = new RaiseEventOptions();
+			//optsOthers.Encrypt = false;
+			optsOthers.Receivers = ReceiverGroup.Others;
+
+			optsSvr = new RaiseEventOptions();
+			//optsSvr.Encrypt = false;
+			optsSvr.Receivers = ReceiverGroup.MasterClient;
+
+			sendOpts = new SendOptions();
+
+		}
+
+		public override void OnEnable()
+		{
+			base.OnEnable();
+
+			if (isRegistered)
+				return;
+
+			isRegistered = true;
+
+			//PhotonNetwork.OnEventCall -= this.OnEventHandler;
+			//PhotonNetwork.OnEventCall += this.OnEventHandler;
+		}
+
+		public override void OnDisable()
+		{
+			base.OnDisable();
+			//PhotonNetwork.OnEventCall -= this.OnEventHandler;
+			isRegistered = false;
+		}
+
+
+
+
+		//public override void OnConnected()
+		//{
+		//	//Debug.Log("OnConnectedToPhoton");
+		//}
+
+		public override void OnConnectedToMaster()
+		{
+			foreach (INetEvents cb in iNetEvents)
+				cb.OnConnect(ServerClient.Master);
+
+			foreach (IOnConnect cb in iOnConnect)
+				cb.OnConnect(ServerClient.Master);
+		}
+
+		public override void OnDisconnected(DisconnectCause cause)
+		{
+			networkStarted = false;
+
+			if (iNetEvents != null)
+				foreach (INetEvents cb in iNetEvents)
+					cb.OnNetworkDestroy();
+
+			if (iOnNetworkDestroy != null)
+				foreach (IOnNetworkDestroy cb in iOnNetworkDestroy)
+					cb.OnNetworkDestroy();
+		}
+
+		public override void OnJoinRoomFailed(short returnCode, string message)
+		{
+			XDebug.LogWarning("Failed to connect. " + message);
+		}
+
+		//public override void OnFailedToConnectToPhoton(DisconnectCause cause)
+		//{
+		//	XDebug.LogWarning("Failed to connect to Photon. " + cause);
+		//}
+		public override void OnJoinedRoom()
+		{
+			foreach (IOnJoinRoom cb in iOnJoinRoom)
+				cb.OnJoinRoom();
+		}
+
+		public override void OnJoinRandomFailed(short returnCode, string message)
+		{
+			foreach (IOnJoinRoomFailed cb in iOnJoinRoomFailed)
+				cb.OnJoinRoomFailed();
+		}
+
+
+		/// <summary>
+		/// Capture incoming Photon messages here. If it is the one we are interested in - pass it to NSTMaster
+		/// </summary>
+		public void OnEvent(EventData photonEvent)
+		{
+		//	photonEvent.Sender
+		//}
+
+		//private void OnEventHandler(byte eventCode, object content, int senderId)
+		//{
+			if (photonEvent.Code != DefaultMsgTypeId)
+				return;
+
+			// ignore messages from self.
+			if (ServerIsActive && PhotonNetwork.MasterClient.ActorNumber == photonEvent.Sender)
+			{
+				XDebug.Log("Master Client talking to self? Normal occurance for a few seconds after Master leaves the game and a new master is selected.");
+				return;
+			}
+
+			UdpBitStream bitstream = new UdpBitStream(photonEvent.CustomData as byte[]);
+			UdpBitStream outstream = new UdpBitStream(NSTMaster.outstreamByteArray);
+
+			bool mirror = PhotonNetwork.IsMasterClient && NetLibrarySettings.single.defaultAuthority == DefaultAuthority.ServerAuthority;
+
+			NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, mirror, photonEvent.Sender);
+
+			if (mirror)// authorityModel == DefaultAuthority.ServerClient)
+			{
+				byte[] outbytes = new byte[outstream.BytesUsed];
+				Array.Copy(outstream.Data, outbytes, outbytes.Length);
+				PhotonNetwork.NetworkingClient.OpRaiseEvent(DefaultMsgTypeId, outbytes, optsOthers, sendOpts);
+				PhotonNetwork.NetworkingClient.Service();
+
+				
+			}
+		}
+
+		public static void SendUpdate(ref UdpBitStream bitstream, ref UdpBitStream outstream)
+		{
+			//TODO replace this GC generating mess with something prealloc
+			byte[] streambytes = new byte[bitstream.BytesUsed];
+			Array.Copy(bitstream.Data, streambytes, streambytes.Length);
+			PhotonNetwork.NetworkingClient.OpRaiseEvent(DefaultMsgTypeId, streambytes, (isServerClient && !PhotonNetwork.IsMasterClient) ? optsSvr : optsOthers, sendOpts);
+			PhotonNetwork.NetworkingClient.Service();
+			
+
+			// MasterClient send to self - may are may not need this in the future.
+			if (PhotonNetwork.IsMasterClient)
+				NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, false, PhotonNetwork.MasterClient.ActorNumber);
+		}
+
+		#region UNET Specific methods
+
+		public static Transform UNET_GetPlayerSpawnPoint() { return null; }
+		public static void UNET_RegisterStartPosition(Transform tr) { }
+		public static void UNET_UnRegisterStartPosition(Transform tr) { }
+		public static GameObject UNET_GetRegisteredPlayerPrefab() { return null; }
+
+		#endregion
+
+		#region PUN Specific methods
+
+		//public static bool PUN_AutoJoinLobby
+		//{
+		//	get { return PhotonNetwork.autoJoinLobby; }
+		//	set { PhotonNetwork.autoJoinLobby = value; }
+
+		//}
+		public static bool PUN_AutomaticallySyncScene
+		{
+			get { return PhotonNetwork.AutomaticallySyncScene; }
+			set { PhotonNetwork.AutomaticallySyncScene = value; }
+
+		}
+		public static bool PUN_Connected
+		{
+			get { return PhotonNetwork.IsConnected; }
+		}
+
+		public static void PUN_ConnectUsingSettings(string gameversion = null)
+		{
+			PhotonNetwork.ConnectUsingSettings();
+		}
+
+		public static void PUN_JoinRandomRoom()
+		{
+			PhotonNetwork.JoinRandomRoom();
+		}
+
+		public static void PUN_LoadLevel(string scenename)
+		{
+			PhotonNetwork.LoadLevel(scenename);
+		}
+
+		public static void PUN_CreateRoom(string roomname, byte maxPlayers)
+		{
+			PhotonNetwork.CreateRoom(roomname, new RoomOptions() { MaxPlayers = maxPlayers }, null);
+		}
+
+		#endregion
+
+
+		public static void ServerChangeScene(string sceneName)
+		{
+			if (PhotonNetwork.IsMasterClient)
+				PhotonNetwork.LoadLevel(sceneName);
+		}
+
+
+
+		public static GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent)
+		{
+			GameObject go = PhotonNetwork.Instantiate(prefab.name, position, rotation, 0);
+			go.transform.parent = parent;
+			return go;
+		}
+
+		public static void UnSpawn(GameObject obj)
+		{
+			if (obj.GetComponent<PhotonView>().IsMine && PhotonNetwork.IsConnected)
+			{
+				PhotonNetwork.Destroy(obj);
+			}
+		}
+
+	}
+
+#if UNITY_EDITOR
+
+	[CustomEditor(typeof(MasterNetAdapter))]
+	[CanEditMultipleObjects]
+	public class MasterNetAdapterPEditor : NSTHeaderEditorBase
+	{
+		public override void OnEnable()
+		{
+			headerColor = HeaderSettingsColor;
+			headerName = HeaderMasterName;
+			base.OnEnable();
+		}
+
+		public override void OnInspectorGUI()
+		{
+			serializedObject.Update();
+
+			base.OnInspectorGUI();
+			EditorGUILayout.HelpBox("This is the Adapter for Photon. To work with UNET, switch the Network Library.", MessageType.None);
+		}
+	}
+
+#endif
+}

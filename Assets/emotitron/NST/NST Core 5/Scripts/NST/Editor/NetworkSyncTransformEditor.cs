@@ -1,0 +1,1 @@
+﻿// Moved out of Editor to avoid asmdefs

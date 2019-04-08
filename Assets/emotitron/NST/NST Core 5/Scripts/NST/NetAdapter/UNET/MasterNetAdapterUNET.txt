@@ -1,0 +1,610 @@
+﻿//Copyright 2018, Davin Carten, All rights reserved
+
+using UnityEngine;
+using emotitron.Compression;
+using System.Collections.Generic;
+
+#if PUN_2_OR_NEWER
+#endif
+
+#if MIRROR
+using Mirror;
+#else
+using UnityEngine.Networking;
+#endif
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+#pragma warning disable CS0618 // UNET obsolete
+
+namespace emotitron.NST
+{
+	/// <summary>
+	///  Nonalloc message for Mirror, since we can't directly send writers with Mirror.
+	/// </summary>
+	public class BytesMessageNonalloc : MessageBase
+	{
+		public byte[] buffer;
+		public ushort length;
+
+		public BytesMessageNonalloc()
+		{
+
+		}
+		public BytesMessageNonalloc(byte[] nonalloc)
+		{
+			this.buffer = nonalloc;
+		}
+
+		public BytesMessageNonalloc(byte[] nonalloc, ushort length)
+		{
+			this.buffer = nonalloc;
+			this.length = length;
+		}
+
+		public override void Serialize(NetworkWriter writer)
+		{
+			writer.Write(length);
+			for (int i = 0; i < length; i++)
+				writer.Write(buffer[i]);
+		}
+
+		public override void Deserialize(NetworkReader reader)
+		{
+			length = reader.ReadUInt16();
+			for (int i = 0; i < length; i++)
+				buffer[i] = reader.ReadByte();
+		}
+
+	}
+
+	/// <summary>
+	/// The UNET version of this interface for the NSTMaster - unifying code to work with both UNET and Photon.
+	/// </summary>
+	[DisallowMultipleComponent]
+	[AddComponentMenu("")]
+	//[RequireComponent(typeof(NetworkIdentity))]
+	//[NetworkSettings(sendInterval = .000001f)]
+
+	public class MasterNetAdapter : MonoBehaviour //, INSTMasterAdapter
+	{
+		[HideInInspector]
+		public static bool networkStarted;
+
+		public static MasterNetAdapter single;
+		private static NetworkClient cachedNetworkClient;
+
+#if MIRROR
+		public const string ADAPTER_NAME = "MIRROR";
+#else
+		public const string ADAPTER_NAME = "UNET";
+#endif
+
+		public const NetworkLibrary NET_LIB = NetworkLibrary.UNET;
+
+		/// <summary>
+		/// Attribute for getting the NET_LIB value, without throwing warnings about unreachable code.
+		/// </summary>		
+		public static NetworkLibrary NetLib { get { return NET_LIB; } }
+
+		public const NetworkModel NET_MODEL = NetworkModel.ServerClient;
+
+		// TODO this likely needs an actual test
+		public static int MasterClientId = 0;
+
+		// Interfaced fields
+		public NetworkLibrary NetLibrary { get { return NET_LIB; } }
+		public static NetworkLibrary NetworkLibrary { get { return NET_LIB; } }
+
+		// TODO: Attempt to cache this (if UNET makes that possible of course)
+		//public static bool Connected { get { return NetworkServer.active || (NetworkManager.singleton.client != null && NetworkManager.singleton.client.isConnected); } }
+		public static bool Connected { get { return NetworkServer.active || NetworkClient.active; } }
+#if MIRROR_3_0_OR_NEWER
+		public static bool ReadyToSend { get { return NetworkServer.active || (NetworkManager.singleton && NetworkManager.singleton.client != null && NetworkClient.isConnected); } }
+#else
+		public static bool ReadyToSend { get { return NetworkServer.active || (NetworkManager.singleton && NetworkManager.singleton.client != null && NetworkManager.singleton.client.isConnected); } }
+#endif
+
+		public static bool ServerIsActive { get { return NetworkServer.active; } }
+		public static bool ClientIsActive { get { return NetworkClient.active; } }
+		public static bool NetworkIsActive { get { return NetworkClient.active || NetworkServer.active; } }
+
+		public const short LowestMsgTypeId = (short)MsgType.Highest;
+		public const short HighestMsgTypeId = short.MaxValue;
+		public const short DefaultMsgTypeId = 190;
+
+		//public bool IsRegistered { get { return isRegistered; } set { isRegistered = value; } }
+
+		#region Callback Interfaces
+
+		[HideInInspector] public static List<Component> iNetEvents = new List<Component>();
+		[HideInInspector] public static List<Component> iOnConnect = new List<Component>();
+		[HideInInspector] public static List<Component> iOnStartLocalPlayer = new List<Component>();
+		[HideInInspector] public static List<Component> iOnNetworkDestroy = new List<Component>();
+		[HideInInspector] public static List<Component> iOnJoinRoom = new List<Component>();
+		[HideInInspector] public static List<Component> iOnJoinRoomFailed = new List<Component>();
+
+		public static void RegisterCallbackInterfaces(Component obj)
+		{
+			MasterNetCommon.RegisterCallbackInterfaces(obj);
+		}
+
+		public static void UnregisterCallbackInterfaces(Component obj)
+		{
+			MasterNetCommon.UnregisterCallbackInterfaces(obj);
+		}
+
+		#endregion
+
+		// Statics
+		//private static NetworkWriter writer = new NetworkWriter();
+		private static short masterMsgTypeId;
+		//private static bool isRegistered;
+
+		private void Awake()
+		{
+			if (!EnforceSingleton())
+			{
+				return;
+			}
+		}
+
+		// Run RegisterHandlers again in Start in case the adapter was added late and OnStartServer and OnStartClient never ran.
+		private void OnEnable()
+		{
+			if (isInvalidSingleton)
+				return;
+
+			networkStarted = NetworkServer.active || NetworkClient.active;
+			RegisterHanders();
+		}
+
+		private bool isInvalidSingleton;
+		/// <summary>
+		/// Returns true if this is the singleton, false if we had to destroy it.
+		/// </summary>
+		private bool EnforceSingleton()
+		{
+
+			if (single && single != this)
+			{
+				isInvalidSingleton = true;
+				Destroy(this);
+				return false;
+			}
+
+			isInvalidSingleton = false;
+			single = this;
+			return true;
+		}
+
+		private bool ServerRegistered;
+		private bool ClientRegistered;
+
+		/// <summary>
+		/// Constantly check for changes in network status (UNET callbacks are pretty terrible)
+		/// </summary>
+		private void Update()
+		{
+			if (!ServerRegistered && NetworkServer.active)
+			{
+				OnStartServer();
+				ServerRegistered = true;
+			}
+			else if (ServerRegistered && !NetworkServer.active)
+			{
+				OnNetworkDestroy();
+			}
+
+			if (!ClientRegistered && NetworkClient.active)
+			{
+				OnStartClient();
+				ClientRegistered = true;
+			}
+			else if (ClientRegistered && !NetworkClient.active)
+			{
+				OnNetworkDestroy();
+			}
+		}
+
+		public void OnStartServer()
+		{
+			if (isInvalidSingleton)
+				return;
+
+			gameObject.SetActive(true);
+
+			RegisterHanders();
+
+			networkStarted = true;
+
+			foreach (INetEvents cb in iNetEvents)
+				cb.OnConnect(ServerClient.Server);
+
+			foreach (IOnConnect cb in iOnConnect)
+				cb.OnConnect(ServerClient.Server);
+		}
+		public void OnStartClient()
+		{
+			if (isInvalidSingleton)
+				return;
+
+			cachedNetworkClient = NetworkManager.singleton.client;
+
+			gameObject.SetActive(true);
+
+			RegisterHanders();
+
+			networkStarted = true;
+
+			foreach (INetEvents cb in iNetEvents)
+				cb.OnConnect(ServerClient.Client);
+
+			foreach (IOnConnect cb in iOnConnect)
+				cb.OnConnect(ServerClient.Client);
+		}
+
+		private void Start()
+		{
+
+#if MIRROR_1726_OR_NEWER && UNITY_EDITOR
+
+			if (Transport.activeTransport is TelepathyTransport)
+				Debug.LogWarning("<b><color=red>Network Sync Transform is designed for Unreliable UDP transports.</color></b> The current transport is Telepathy(TCP-Reliable) and will perform badly under real internet conditions at high tick rates. Consider using Ignorance or LiteNetLib for Mirror transports.");
+
+#elif MIRROR && UNITY_EDITOR
+
+			if (NetworkManager.singleton.transport is TelepathyTransport)
+				Debug.LogWarning("<b><color=red>Network Sync Transform is designed for Unreliable UDP transports.</color></b> The current transport is Telepathy(TCP-Reliable) and will perform badly under real internet conditions.");
+#endif
+		}
+
+		public void OnDestroy()
+		{
+			OnNetworkDestroy();
+		}
+
+		public void OnDisable()
+		{
+			OnNetworkDestroy();
+		}
+
+		public void OnNetworkDestroy()
+		{
+			if (isInvalidSingleton)
+				return;
+
+			networkStarted = false;
+
+			if (iNetEvents != null)
+				foreach (INetEvents cb in iNetEvents)
+					cb.OnNetworkDestroy();
+
+			if (iOnNetworkDestroy != null)
+				foreach (IOnNetworkDestroy cb in iOnNetworkDestroy)
+					cb.OnNetworkDestroy();
+
+			//isRegistered = false;
+			if (NetworkServer.handlers.ContainsKey(masterMsgTypeId) && NetworkServer.handlers[masterMsgTypeId] == ReceiveUpdate)
+				NetworkServer.UnregisterHandler(HeaderSettings.Single.masterMsgTypeId);
+#if MIRROR_3_0_OR_NEWER
+			NetworkClient.UnregisterHandler(masterMsgTypeId);
+#else
+			if (NetworkManager.singleton && NetworkManager.singleton.client != null)
+				NetworkManager.singleton.client.UnregisterHandler(masterMsgTypeId);
+#endif
+
+
+			ServerRegistered = false;
+			ClientRegistered = false;
+
+
+		}
+
+		private void RegisterHanders()
+		{
+			if (isInvalidSingleton)
+				return;
+
+			//if (IsRegistered)
+			//	return;
+
+			masterMsgTypeId = HeaderSettings.Single.masterMsgTypeId;
+
+			if (NetworkServer.active)
+			{
+				///// Unregister just in case of edge cases where Unregister never gets called
+				//NetworkServer.UnregisterHandler(masterMsgTypeId);
+				if (!NetworkServer.handlers.ContainsKey(masterMsgTypeId))
+					NetworkServer.RegisterHandler(masterMsgTypeId, ReceiveUpdate);
+
+				/// Mirror (at least Telepathy) needs a dummy handler for Host talking to itself
+#if MIRROR_3_0_OR_NEWER
+				if (NetworkClient.active)
+					if (!NetworkClient.handlers.ContainsKey(masterMsgTypeId))
+						NetworkClient.RegisterHandler(masterMsgTypeId, ReceiveDummy);
+#elif MIRROR
+				if (NetworkClient.active)
+					if (!NetworkManager.singleton.client.handlers.ContainsKey(masterMsgTypeId))
+						NetworkManager.singleton.client.RegisterHandler(masterMsgTypeId, ReceiveDummy);
+#endif
+				//isRegistered = true;
+			}
+
+			else if (NetworkClient.active)
+			{
+				///// Unregister just in case of edge cases where Unregister never gets called
+				//NetworkManager.singleton.client.UnregisterHandler(masterMsgTypeId);
+#if MIRROR_3_0_OR_NEWER
+				if (!NetworkClient.handlers.ContainsKey(masterMsgTypeId))
+					NetworkClient.RegisterHandler(masterMsgTypeId, ReceiveUpdate);
+#else
+				if (!NetworkManager.singleton.client.handlers.ContainsKey(masterMsgTypeId))
+					NetworkManager.singleton.client.RegisterHandler(masterMsgTypeId, ReceiveUpdate);
+
+#endif
+				//isRegistered = true;
+			}
+		}
+
+		/// Reuse the MessageBase
+		private static readonly BytesMessageNonalloc bytesmsg = new BytesMessageNonalloc() { buffer = NSTMaster.bitstreamByteArray };
+		private static readonly BytesMessageNonalloc outbytemsg = new BytesMessageNonalloc() { buffer = NSTMaster.outstreamByteArray };
+
+#if MIRROR
+		// Mirror SendToAll seems to send from Host server to its own client, and will flood the log with errors if no handler is set up.
+		public static void ReceiveDummy(NetworkMessage msg)
+		{
+		}
+
+#endif
+
+		/// <summary>
+		///  Updates over the network arrive here - AFTER the Update() runs (not tested for all platforms... thanks unet for the great docs.) 
+		///  The incoming bitstream is read
+		/// </summary>
+		/// <param name="msg"></param>
+		private static void ReceiveUpdate(NetworkMessage msg)
+		{
+			bytesmsg.Deserialize(msg.reader);
+
+			UdpBitStream bitstream = new UdpBitStream(bytesmsg.buffer, bytesmsg.length);
+			UdpBitStream outstream = new UdpBitStream(NSTMaster.outstreamByteArray);
+
+			NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, NetworkServer.active, msg.conn.connectionId);
+
+			outbytemsg.length = (ushort)outstream.BytesUsed;
+
+			// Write a clone message and pass it to all the clients if this is the server receiving
+			if (NetworkServer.active)
+			{
+				NetworkServer.SendToAll(msg.msgType, outbytemsg);
+			}
+		}
+
+		public static void SendUpdate(ref UdpBitStream bitstream, ref UdpBitStream outstream)
+		{
+			bytesmsg.length = (ushort)bitstream.BytesUsed;
+
+			// if this is the server - send to all.
+			if (NetworkServer.active)
+			{
+
+				//writer.SendPayloadArrayToAllClients(masterMsgTypeId, Channels.DefaultUnreliable);
+				NetworkServer.SendToAll(masterMsgTypeId, bytesmsg);
+
+				// If this is the server as client, run the ReceiveUpdate since local won't get this run.
+				//if (NetworkClient.active)
+				NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, false, 0);
+
+			}
+			// if this is a client send to server.
+			else
+			{
+#if MIRROR_3_0_OR_NEWER
+				if (cachedNetworkClient != null && NetworkClient.isConnected)
+				{
+					NetworkClient.Send(masterMsgTypeId, bytesmsg);
+				}
+#else
+				// TODO: find reliable way to cache this condition - Is here to eliminate some shut down warnings, and not critical
+				if (cachedNetworkClient != null && cachedNetworkClient.isConnected)
+				{
+					NetworkManager.singleton.client.Send(masterMsgTypeId, bytesmsg);
+				}
+#endif
+
+			}
+		}
+
+		///// <summary>
+		/////  Updates over the network arrive here - AFTER the Update() runs (not tested for all platforms... thanks unet for the great docs.) 
+		/////  The incoming bitstream is read
+		///// </summary>
+		///// <param name="msg"></param>
+		//private static void ReceiveUpdate(NetworkMessage msg)
+		//{
+
+		//	UdpBitStream bitstream = new UdpBitStream(msg.reader.ReadBytesNonAlloc(NSTMaster.bitstreamByteArray, msg.reader.Length), msg.reader.Length);
+		//	UdpBitStream outstream = new UdpBitStream(NSTMaster.outstreamByteArray);
+
+		//	NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, NetworkServer.active, msg.conn.connectionId);
+
+		//	// Write a clone message and pass it to all the clients if this is the server receiving
+		//	if (NetworkServer.active) // && msg.conn == nst.NI.clientAuthorityOwner)
+		//	{
+		//		writer.StartMessage(msg.msgType);
+		//		writer.WriteUncountedByteArray(outstream.Data, outstream.BytesUsed);
+		//		writer.SendPayloadArrayToAllClients(msg.msgType);
+		//		if (NetworkServer.connections[0] != null)
+		//			NetworkServer.connections[0].FlushChannels();
+		//	}
+		//}
+
+		//public static void SendUpdate(ref UdpBitStream bitstream, ref UdpBitStream outstream)
+		//{
+		//	// Send the bitstream to the UNET writer
+		//	writer.StartMessage(masterMsgTypeId);
+		//	writer.WriteUncountedByteArray(NSTMaster.bitstreamByteArray, bitstream.BytesUsed);
+		//	writer.FinishMessage();
+
+		//	// if this is the server - send to all.
+		//	if (NetworkServer.active)
+		//	{
+		//		writer.SendPayloadArrayToAllClients(masterMsgTypeId, Channels.DefaultUnreliable);
+		//		//NetworkServer.connections[0].FlushChannels();
+
+		//		// If this is the server as client, run the ReceiveUpdate since local won't get this run.
+		//		//if (NetworkClient.active)
+		//		NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, false, 0);
+
+		//	}
+		//	// if this is a client send to server.
+		//	else
+		//	{
+		//		// TODO: find reliable way to cache this condition - Is here to eliminate some shut down warnings, and not critical
+		//		if (cachedNetworkClient != null && cachedNetworkClient.isConnected)
+		//			NetworkManager.singleton.client.SendWriter(writer, Channels.DefaultUnreliable);
+		//		//NetworkManager.singleton.client.connection.FlushChannels();
+		//	}
+		//}
+
+		#region UNET Specific methods
+
+		public static Transform UNET_GetPlayerSpawnPoint()
+		{
+			return NetworkManager.singleton.GetStartPosition();
+		}
+
+		public static void UNET_RegisterStartPosition(Transform tr)
+		{
+			NetworkManager.RegisterStartPosition(tr);
+		}
+
+		public static void UNET_UnRegisterStartPosition(Transform tr)
+		{
+			NetworkManager.UnRegisterStartPosition(tr);
+		}
+
+		public static GameObject UNET_GetRegisteredPlayerPrefab()
+		{
+			if (NetworkManager.singleton == null)
+				NetworkManager.singleton = FindObjectOfType<NetworkManager>();
+
+			if (NetworkManager.singleton != null)
+			{
+				return NetworkManager.singleton.playerPrefab;
+			}
+			return null;
+		}
+
+		#endregion
+
+		#region PUN Specific relays
+
+		public static bool PUN_AutoJoinLobby { get { return false; } set { } }
+		public static bool PUN_AutomaticallySyncScene { get { return false; } set { } }
+		public static bool PUN_Connected { get { return false; } }
+		public static void PUN_ConnectUsingSettings(string gameversion) { }
+		public static void PUN_JoinRandomRoom() { }
+		public static void PUN_LoadLevel(string scenename) { }
+		public static void PUN_CreateRoom(string roomname, int maxPlayer) { }
+
+		#endregion
+
+
+		public static GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent)
+		{
+			GameObject go = Instantiate(prefab, position, rotation, parent);
+			NetworkServer.Spawn(go);
+			return go;
+		}
+
+		public static void UnSpawn(GameObject go)
+		{
+			if (NetworkServer.active)
+				NetworkServer.UnSpawn(go);
+		}
+
+
+		public static void ServerChangeScene(string sceneName)
+		{
+			if (NetworkServer.active)
+				NetworkManager.singleton.ServerChangeScene(sceneName);
+		}
+
+#if UNITY_EDITOR
+		/// <summary>
+		/// Add a NetworkIdentity to the supplied NSTMaster gameobject. Sets localPlayerAuth to false (master isn't a player)
+		/// </summary>
+		/// <param name="go"></param>
+		public static bool AddRequiredEntityComponentToMaster(GameObject go)
+		{
+			//if (!go.GetComponent<NetworkIdentity>())
+			//{
+			//	NetworkIdentity ni = EditorUtils.EnsureRootComponentExists<NetworkIdentity>(go);
+			//	ni.localPlayerAuthority = false;
+			//	return true;
+			//}
+			//return false;
+			return true;
+		}
+
+		public static void PurgeLibSpecificComponents()
+		{
+			NetAdapterTools.PurgeTypeFromEverywhere<NetworkIdentity>();
+			NetAdapterTools.PurgeTypeFromEverywhere<NetworkManager>(true);
+		}
+
+		public static void AddNstEntityComponentsEverywhere()
+		{
+			NetAdapterTools.AddComponentsWhereverOtherComponentIsFound<NetworkSyncTransform, NSTNetAdapter, NetworkIdentity>();
+		}
+
+		public static void AddLibrarySpecificEntityComponent(GameObject go)
+		{
+			//if (!go.GetComponent<NetworkIdentity>())
+			//	go.AddComponent<NetworkIdentity>().assetId.IsValid();
+		}
+
+
+
+#endif
+	}
+
+#if UNITY_EDITOR
+
+	[CustomEditor(typeof(MasterNetAdapter))]
+	[CanEditMultipleObjects]
+	public class MasterNetAdapterEditor : NSTHeaderEditorBase
+	{
+		//NetworkIdentity ni;
+
+		public override void OnEnable()
+		{
+			headerColor = HeaderSettingsColor;
+			headerName = HeaderMasterName;
+			base.OnEnable();
+		}
+
+		public override void OnInspectorGUI()
+		{
+			serializedObject.Update();
+
+			MasterNetAdapter _target = (MasterNetAdapter)target;
+
+			NetAdapterTools.EnsureSceneNetLibDependencies();
+
+			base.OnInspectorGUI();
+			EditorGUILayout.HelpBox("This is the " + MasterNetAdapter.ADAPTER_NAME + " adapter. To work with Photon PUN, switch the Network Library.", MessageType.None);
+			NetLibrarySettings.Single.DrawGui(target, true, false, true);
+		}
+	}
+
+#endif
+}
+
+#pragma warning restore CS0618 // UNET obsolete
+
