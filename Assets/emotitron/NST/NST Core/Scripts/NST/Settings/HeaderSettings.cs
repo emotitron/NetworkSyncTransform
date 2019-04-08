@@ -15,13 +15,13 @@ namespace emotitron.NST
 	public class HeaderSettings : SettingsScriptableObject<HeaderSettings>
 	{
 
-	
-		[BitsPerRange(1, 32, 
+
+		[BitsPerRange(1, 32,
 			MasterNetAdapter.NET_LIB == NetworkLibrary.UNET,
 			false,
 			"Max NST Objects:", true,
 			"Set this to the smallest number that works for your project. 1 bit = 2 NST object max, 4 bits = 16 NST objects max, 5 bits = 32 NST objects max, 32 bits = Unlimited"
-			
+
 			)]
 
 		[SerializeField]
@@ -35,7 +35,7 @@ namespace emotitron.NST
 			)]
 		public int bitsForPUNClients = 10;
 
-		[BitsPerRange(1, 16, 
+		[BitsPerRange(1, 16,
 			MasterNetAdapter.NET_LIB == NetworkLibrary.PUN || MasterNetAdapter.NET_LIB == NetworkLibrary.PUN2,
 			false,
 			"Max Net Entities Per Client:", true,

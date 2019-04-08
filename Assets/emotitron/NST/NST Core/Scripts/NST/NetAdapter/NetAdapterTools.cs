@@ -515,6 +515,18 @@ namespace emotitron.NST
 
 			if (NetworkManager.singleton == null)
 			{
+
+#if MIRROR
+				// Check for existing UNET NM. If it exists, copy its contents to Mirror NM and destroy it.
+				var unetNM = FindObjects.FindObjectsOfTypeAllInScene<UnityEngine.Networking.NetworkManager>();
+				if (unetNM.Count > 0)
+				{
+					var unetHUD = unetNM[0].GetComponent<UnityEngine.Networking.NetworkManagerHUD>();
+					var mirrorNM = Utilities.Networking.MirrorCheck.ConvertNetworkManager(unetNM[0], unetHUD);
+					return mirrorNM;
+				}
+#endif
+
 				List<NetworkManager> found = FindObjects.FindObjectsOfTypeAllInScene<NetworkManager>();
 
 				if (found.Count > 0)

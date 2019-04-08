@@ -47,7 +47,7 @@ namespace emotitron.NST
 			}
 #endif
 			// Initialize all SettingSOs
-			var sos = Resources.LoadAll<SettingsScriptableObjectBase>("");
+			var sos = Resources.FindObjectsOfTypeAll<SettingsScriptableObjectBase>();
 
 			foreach (var so in sos)
 				so.Initialize();
@@ -211,15 +211,15 @@ namespace emotitron.NST
 			NSTSettings.DrawAllSettingGuis(target, serializedObject, false);
 		}
 
-		private static void AddMapBounds()
-		{
-			MeshRenderer[] renderers = Selection.activeGameObject.GetComponents<MeshRenderer>();
-			if (renderers.Length == 0)
-			{
-				Debug.LogWarning("NSTMapBounds added to an item that has no Mesh Renderers in its tree.");
-			}
-			Selection.activeGameObject.AddComponent<NSTMapBounds>();
-		}
+		//private static void AddMapBounds()
+		//{
+		//	MeshRenderer[] renderers = Selection.activeGameObject.GetComponents<MeshRenderer>();
+		//	if (renderers.Length == 0)
+		//	{
+		//		Debug.LogWarning("NSTMapBounds added to an item that has no Mesh Renderers in its tree.");
+		//	}
+		//	Selection.activeGameObject.AddComponent<NSTMapBounds>();
+		//}
 	}
 #endif
 }
