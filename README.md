@@ -1,8 +1,23 @@
 ![Header](https://github.com/emotitron/NetworkSyncTransform/blob/master/Docs/img/NST_DocumentHeader.jpg?raw=true)
 # Network Sync Transform
 
-Future home of the Network Sync Transform public git.
-Until the project is set up, here is the current FREE release:
+Networking HLAPI for Photon PUN/PUN2 , UNet and Mirror. This asset incorporates a circular buffer based transform sync engine, creating very smooth and stable movement replication - even in lossy/jittery real-world network conditions.
+
+Additionally, the circular buffer reduces data rates by packaging all outgoing data onto regular network ticks. The bitstream is accessible as well, allowing for additional data to piggyback on these packets - such as health, emotes, timers, etc - rather than uncompressed and adhoc with RPCs/Syncvars.
+
+**Supports:**
+
+- **EXTREMELY low network usage** compared to the UNET/PUN transform sync components, with a range of compression and culling options.
+- **Smart Interpolation** with automatic handling of rigidbodies and non-rigidbodies.
+- **Extrapolation options** for how buffer under-runs (network hangups) are handled.
+- **Buffered frames** to reduce and eliminate hitching from network loss and jitter.
+- Server initiated **teleport and auto-teleport**.
+- **Bit-level control** over nearly every aspect of the packets created and the resulting packet sizes.
+- **Sample components and scenes** demonstrating networked handling of health, movement, weapon fire, etc.
+- **Custom Messages** that allow user data to piggyback on sync ticks, such as weapon fire or object throws.
+- **Rewind Add-on available** on the Unity Store, with full recreation of colliders on gameobjects, including synced children objects.
+- **Element Add-on available** on the Asset Store, for syncing child turrets, arms, heads, etc.
+- **Animator Add-on available** on the Asset Store for syncing the unity Animator using NST's buffer and compression.
 
 ## Free NST Core Download
 You are welcome to use this library for games, however scripts/components not explicity marked with MIT licenses may not sold be part of assets libraries.
