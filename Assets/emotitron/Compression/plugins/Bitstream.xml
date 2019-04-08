@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Bitstream</name>
+    </assembly>
+    <members>
+        <member name="T:emotitron.Compression.Bitstream">
+            <summary>
+            A mini-bitpacker (up to 40 bytes) used for storing compressed transforms. Contains methods for basic Serialization.
+            </summary>
+        </member>
+        <member name="F:emotitron.Compression.Bitstream.ULONG_COUNT">
+            <summary>
+            The number of fixed ulong fragments acting as the backing array for the Bitstream struct.
+            </summary>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.op_Implicit(emotitron.Compression.Bitstream)~System.UInt64">
+            <summary>
+            Implicit conversion of Bitstream to ulong extracts just the first fragment.
+            </summary>
+            <param name="bs"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.op_Implicit(emotitron.Compression.Bitstream)~System.UInt32">
+            <summary>
+            Implicit conversion of Bitstream to uint extracts just the first 32 bits of the first fragment.
+            </summary>
+            <param name="bs"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.op_Implicit(emotitron.Compression.Bitstream)~System.UInt16">
+            <summary>
+            Implicit conversion of Bitstream to uint extracts just the first 16 bits of the first fragment.
+            </summary>
+            <param name="bs"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.op_Implicit(emotitron.Compression.Bitstream)~System.Byte">
+            <summary>
+            Implicit conversion of Bitstream to uint extracts just the first 8 bits of the first fragment.
+            </summary>
+            <param name="bs"></param>
+        </member>
+        <member name="P:emotitron.Compression.Bitstream.WritePtr">
+            <summary>
+            The current bit position for writes to this bitstream. The next write will begin at this bit.
+            </summary>
+        </member>
+        <member name="P:emotitron.Compression.Bitstream.ReadPtr">
+            <summary>
+            The current bit position for reads from this bitstream. The next read will begin at this bit.
+            </summary>
+        </member>
+        <member name="P:emotitron.Compression.Bitstream.RemainingBits">
+            <summary>
+            The writePtr minus the readPtr, This is how many bits are left to Write() before reaching the end of the bitstream.
+            </summary>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.ResetWritePtr">
+            <summary>
+            Sets the write bit position to 0;
+            </summary>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.ResetReadPtr">
+            <summary>
+            Sets the read bit position to 0;
+            </summary>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.Reset">
+            <summary>
+            Reset the bitstream to an empty state.
+            </summary>
+        </member>
+        <member name="P:emotitron.Compression.Bitstream.BytesUsed">
+            <summary>
+            Returns the rounded up number of bytes currently used, based on the position of the WritePtr.
+            </summary>
+        </member>
+        <member name="P:emotitron.Compression.Bitstream.ReadPtrBytePosition">
+            <summary>
+            Returns how many bytes have been read, rounded up to the nearest byte. If 0 bits have been read, this will be zero. If 9 bits have been read, this will be 2.
+            </summary>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.BitsUsedByFragment(System.Int32,System.Int32)">
+            <summary>
+            Returns how many bits of the fragment index are used given the total bits
+            </summary>
+            <param name="fragment"></param>
+            <param name="totalbits"></param>
+            <returns></returns>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.GetByte(System.Int32)">
+            <summary>
+            Read out the byte[] index equivalent. Interally the bitstream is Fixed ulong[5].
+            </summary>
+            <param name="arrayIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.Write(emotitron.Compression.Bitstream)">
+            <summary>
+            Writes the bits of src bitstream (from 0 to WritePtr) into this bitstream. NOTE this method is the worst choice. When possible use 'Write(ref src)'
+            or 'crusher.Write(value, ref bitstream)'. 
+            </summary>
+            <param name="src"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.Write(emotitron.Compression.Bitstream@)">
+            <summary>
+            Writes the bits of src bitstream (from 0 to WritePtr) into this bitstream. NOTE this method is the BEST choice. Passing bitstream as a ref when possible
+            avoids a 48 byte struct allocation.
+            </summary>
+            <param name="src"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.Write(System.UInt64,System.Int32)">
+            <summary>
+            The primary write method. All other write methods lead to this one.
+            </summary>
+            <param name="value">Value to write to bitstream.</param>
+            <param name="bits">Number of lower order bits to write.</param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.WriteFromByteBuffer(System.Byte[],System.Int32)">
+            <summary>
+            Write the contents of a byte[] to this bitstream.
+            </summary>
+            <param name="src"></param>
+            <param name="bitcount">Number of bits to copy.</param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.Read(System.Int32)">
+            <summary>
+            The primary Read method. All other Read method overloads lead to this one.
+            </summary>
+            <param name="bits"></param>
+            <returns></returns>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.ReadOut(System.UInt64@,System.UInt64@,System.UInt64@,System.UInt64@,System.UInt64@)">
+            <summary>
+            Extracts out the 5 fixed ulong fragments that are backing the Bistream.
+            </summary>
+            <param name="fragment0"></param>
+            <param name="fragment1"></param>
+            <param name="fragment2"></param>
+            <param name="fragment3"></param>
+            <param name="fragment4"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.ReadOut(System.UInt64@,System.UInt64@,System.UInt64@,System.UInt64@)">
+            <summary>
+            Extracts out the first 4 fixed ulong fragments that are backing the Bistream.
+            </summary>
+            <param name="fragment0"></param>
+            <param name="fragment1"></param>
+            <param name="fragment2"></param>
+            <param name="fragment3"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.ReadOut(System.UInt64@,System.UInt64@,System.UInt64@)">
+            <summary>
+            Extracts out the first 3 fixed ulong fragments that are backing the Bistream.
+            </summary>
+            <param name="fragment0"></param>
+            <param name="fragment1"></param>
+            <param name="fragment2"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.ReadOut(System.UInt64@,System.UInt64@)">
+            <summary>
+            Extracts out the first 2 fixed ulong fragments that are backing the Bistream.
+            </summary>
+            <param name="fragment0"></param>
+            <param name="fragment1"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.ReadOut(System.UInt64@)">
+            <summary>
+            Extracts out the first fixed ulong fragment that are backing the Bistream.
+            </summary>
+            <param name="fragment0"></param>
+        </member>
+        <member name="M:emotitron.Compression.Bitstream.Compare(emotitron.Compression.Bitstream,emotitron.Compression.Bitstream)">
+            <summary>
+            When possible, use Compare(ref Bitstream a, ref Bitstream b). Bitstream is a 40byte struct, so it is best to pass by ref when possible.
+            </summary>
+            <returns>true if the bitstreams match.</returns>
+        </member>
+        <member name="T:emotitron.Compression.PackedValue">
+            <summary>
+            A simple wrapper for unsigned ints, which also contains how many bits that value is packed down to.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DebugX</name>
+    </assembly>
+    <members>
+        <member name="T:emotitron.Debugging.XDebug">
+            <summary>
+            Unity Debug wrapper that is conditionally removed from release/non-development builts.
+            </summary>
+        </member>
+        <member name="M:emotitron.Debugging.XDebug.Log(System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="logMsg">Message to display in Debug.Log.</param>
+            <param name="logThis">Will only display logThis if this evanluates as true.</param>
+            <param name="forceShow">If logThis evaluates as true, results will be sent to the log even if logging is disabled.</param>
+        </member>
+        <member name="M:emotitron.Debugging.XDebug.LogWarning(System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="logMsg">Message to display in Debug.Log.</param>
+            <param name="logThis">Will only display logThis if this evanluates as true.</param>
+            <param name="forceShow">If logThis evaluates as true, results will be sent to the log even if logging is disabled.</param>[Conditional("DEBUG"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        </member>
+        <member name="M:emotitron.Debugging.XDebug.LogError(System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="logMsg">Message to display in Debug.Log.</param>
+            <param name="logThis">Will only display logThis if this evanluates as true.</param>
+            <param name="forceShow">If logThis evaluates as true, results will be sent to the log even if logging is disabled.</param>[Conditional("DEBUG"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        </member>
+        <member name="M:emotitron.Debugging.XDebug.DrawRay(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Color,System.Single,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="start"></param>
+            <param name="dir"></param>
+            <param name="color"></param>
+            <param name="duration"></param>
+            <param name="drawThis"></param>
+            <param name="forceShow"></param>
+        </member>
+        <member name="M:emotitron.Debugging.XDebug.DrawLine(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Color,System.Single,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="start"></param>
+            <param name="end"></param>
+            <param name="color"></param>
+            <param name="duration"></param>
+            <param name="depthTest"></param>
+            <param name="drawThis"></param>
+            <param name="forceShow"></param>
+        </member>
+        <member name="M:emotitron.Debugging.XDebug.ForwardTraceListener(System.Boolean)">
+            <summary>
+            Add a TraceListener that writes to the Unity Debug.Log. This allows System.Diagnostic.Debug.Assert() fails to appear
+            as Debug.LogError() in Unity.
+            </summary>
+        </member>
+        <member name="M:emotitron.Debugging.XDebug.RedirectConsoleToDebug(System.Boolean)">
+            <summary>
+            Enable/Disable the redirection of Console.WriteLine(string) messages to Unity.Debug.Log()
+            </summary>
+            <param name="redirectOn"></param>
+        </member>
+        <member name="M:emotitron.Debugging.XDebug.RedirectConsoleErrorToDebug(System.Boolean)">
+            <summary>
+            Enable/Disable the redirection of Console.Error.WriteLine(string) messages to Unity.Debug.LogError()
+            </summary>
+            <param name="redirectOn"></param>
+        </member>
+        <member name="T:emotitron.Debugging.UnityConsoleRedirect">
+            <summary>
+            Allows for redirection of Console.Out and Console.Error messages to the Debug.Log
+            </summary>
+        </member>
+        <member name="M:emotitron.Debugging.UnityConsoleRedirect.RedirectConsoleToDebug(System.Boolean)">
+            <summary>
+            Enable/Disable the redirection of Console.WriteLine(string) messages to Unity.Debug.Log()
+            </summary>
+            <param name="redirectOn"></param>
+        </member>
+        <member name="M:emotitron.Debugging.UnityConsoleRedirect.RedirectConsoleErrorToDebug(System.Boolean)">
+            <summary>
+            Enable/Disable the redirection of Console.Error.WriteLine(string) messages to Unity.Debug.LogError()
+            </summary>
+            <param name="redirectOn"></param>
+        </member>
+        <member name="T:emotitron.Debugging.UnityTraceListener">
+            <summary>
+            Unity-specific trace listener for forwarding some Debug, Assert and Trace messages to the Unity.Debug.Log.
+            </summary>
+        </member>
+        <member name="M:emotitron.Debugging.UnityTraceListener.ForwardTraceListener(System.Boolean)">
+            <summary>
+            Add a TraceListener that writes to the Unity Debug.Log. This allows System.Diagnostic.Debug.Assert() fails to appear
+            as Debug.LogError() in Unity.
+            </summary>
+            <param name="redirectToUnity"></param>
+        </member>
+        <member name="T:DebugX">
+            <summary>
+            Unity Debug wrapper that is conditionally removed from release/non-development builts.
+            </summary>
+        </member>
+        <member name="M:DebugX.Log(System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="logMsg">Message to display in Debug.Log.</param>
+            <param name="logThis">Will only display logThis if this evanluates as true.</param>
+            <param name="forceShow">If logThis evaluates as true, results will be sent to the log even if logging is disabled.</param>
+        </member>
+        <member name="M:DebugX.LogWarning(System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="logMsg">Message to display in Debug.Log.</param>
+            <param name="logThis">Will only display logThis if this evanluates as true.</param>
+            <param name="forceShow">If logThis evaluates as true, results will be sent to the log even if logging is disabled.</param>[Conditional("DEBUG"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        </member>
+        <member name="M:DebugX.LogError(System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="logMsg">Message to display in Debug.Log.</param>
+            <param name="logThis">Will only display logThis if this evanluates as true.</param>
+            <param name="forceShow">If logThis evaluates as true, results will be sent to the log even if logging is disabled.</param>[Conditional("DEBUG"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        </member>
+        <member name="M:DebugX.DrawRay(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Color,System.Single,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="logMsg">Message to display in Debug.Log.</param>
+            <param name="logThis">Will only display logThis if this evanluates as true.</param>
+            <param name="forceShow">If logThis evaluates as true, results will be sent to the log even if logging is disabled.</param>[Conditional("DEBUG"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        </member>
+        <member name="M:DebugX.DrawLine(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Color,System.Single,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Debug method wrapper that is conditionally removed from release builds.
+            </summary>
+            <param name="logMsg">Message to display in Debug.Log.</param>
+            <param name="logThis">Will only display logThis if this evanluates as true.</param>
+            <param name="forceShow">If logThis evaluates as true, results will be sent to the log even if logging is disabled.</param>[Conditional("DEBUG"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        </member>
+        <member name="M:DebugX.ForwardTraceListener(System.Boolean)">
+            <summary>
+            Add a TraceListener that writes to the Unity Debug.Log. This allows System.Diagnostic.Debug.Assert() fails to appear
+            as Debug.LogError() in Unity.
+            </summary>
+        </member>
+        <member name="M:DebugX.RedirectConsoleToDebug(System.Boolean)">
+            <summary>
+            Enable/Disable the redirection of Console.WriteLine(string) messages to Unity.Debug.Log()
+            </summary>
+            <param name="redirectOn"></param>
+        </member>
+        <member name="M:DebugX.RedirectConsoleErrorToDebug(System.Boolean)">
+            <summary>
+            Enable/Disable the redirection of Console.Error.WriteLine(string) messages to Unity.Debug.LogError()
+            </summary>
+            <param name="redirectOn"></param>
+        </member>
+    </members>
+</doc>
