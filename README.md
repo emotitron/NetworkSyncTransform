@@ -24,7 +24,7 @@ Offers bit level control of the compression settings, rather than just the prese
 
 ## Documentation
 
-[NST Docs](https://docs.google.com/document/d/1nPWGC_2xa6t4f9P0sI7wAe4osrg4UP0n_9BVYnr5dkQ/edit?usp=sharing)
+[Network Sync Transform (NST) Documentation](https://docs.google.com/document/d/1nPWGC_2xa6t4f9P0sI7wAe4osrg4UP0n_9BVYnr5dkQ/edit?usp=sharing)
 
 ## Contact
 <davincarten@gmail.com>
