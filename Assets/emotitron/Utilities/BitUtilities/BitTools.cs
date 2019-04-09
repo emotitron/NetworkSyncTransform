@@ -1,6 +1,8 @@
 ﻿
 //Copyright 2018, Davin Carten, All rights reserved
 
+using System.Text;
+
 namespace emotitron.Utilities.BitUtilities
 {
 	public static class BitTools
@@ -14,13 +16,6 @@ namespace emotitron.Utilities.BitUtilities
 				(mask & (byte)(~(1 << bit)))));
 		}
 
-		//public static void SetBitInMask(ref byte mask, int bit, bool onoff)
-		//{
-		//	mask = ((byte)((onoff) ?
-		//		(mask | (byte)(1 << bit)) :
-		//		(mask & (byte)(~(1 << bit)))));
-		//}
-
 		//ushort
 		public static void SetBitInMask(this int bit, ref ushort mask, bool onoff)
 		{
@@ -29,13 +24,7 @@ namespace emotitron.Utilities.BitUtilities
 				(mask & (ushort)(~(1 << bit))));
 		}
 
-		//public static void SetBitInMask(ref ushort mask, int bit, bool onoff)
-		//{
-		//	mask = (ushort)((onoff) ?
-		//		(mask | (ushort)(1 << bit)) :
-		//		(mask & (ushort)(~(1 << bit))));
-		//}
-
+		// int
 		public static void SetBitInMask(this int bit, ref int mask, bool onoff)
 		{
 			mask = (int)((onoff) ?
@@ -175,73 +164,75 @@ namespace emotitron.Utilities.BitUtilities
 			return count;
 		}
 
+		public static StringBuilder reusableStringBuilder = new StringBuilder();
+
 		public static string PrintBitMask(this ushort mask)
 		{
-			string str = "";
+			reusableStringBuilder.Length = 0;
 			for (int i = 15; i >= 0; --i)
 			{
-				str += (GetBitInMask(mask, i)) ? 1 : 0;
+				reusableStringBuilder.Append((GetBitInMask(mask, i)) ? 1 : 0);
 
 				if (i % 4 == 0)
-					str += " ";
+					reusableStringBuilder.Append(" ");
 			}
-			return str;
+			return reusableStringBuilder.ToString();
 		}
 
 		public static string PrintBitMask(this byte mask, int highliteNum = -1)
 		{
-			string str = "";
+			reusableStringBuilder.Length = 0;
 			for (int i = 7; i >= 0; --i)
 			{
 				if (i == highliteNum)
-					str += "<b>";
+					reusableStringBuilder.Length = 0;
 
-				str += (GetBitInMask(mask, i)) ? 1 : 0;
+				reusableStringBuilder.Append((GetBitInMask(mask, i)) ? 1 : 0);
 
 				if (i == highliteNum)
-					str += "</b>";
+					reusableStringBuilder.Length = 0;
 
 				if (i % 4 == 0)
-					str += " ";
+					reusableStringBuilder.Append(" ");
 			}
-			return str;
+			return reusableStringBuilder.ToString();
 		}
 
 		public static string PrintBitMask(this uint mask, int highliteNum = -1, int numOfBitsToShow = 32)
 		{
-			string str = "";
+			reusableStringBuilder.Length = 0;
 			for (int i = numOfBitsToShow - 1; i >= 0; --i)
 			{
 				if (i == highliteNum)
-					str += "<b>";
+					reusableStringBuilder.Length = 0;
 
-				str += (GetBitInMask(mask, i)) ? 1 : 0;
+				reusableStringBuilder.Append((GetBitInMask(mask, i)) ? 1 : 0);
 
 				if (i == highliteNum)
-					str += "</b>";
+					reusableStringBuilder.Length = 0;
 
 				if (i % 4 == 0)
-					str += " ";
+					reusableStringBuilder.Append(" ");
 			}
-			return str;
+			return reusableStringBuilder.ToString();
 		}
 		public static string PrintBitMask(this ulong mask, int highliteNum = -1, int numOfBitsToShow = 64)
 		{
-			string str = "";
+			reusableStringBuilder.Length = 0;
 			for (int i = numOfBitsToShow - 1; i >= 0; --i)
 			{
 				if (i == highliteNum)
-					str += "<b>";
+					reusableStringBuilder.Length = 0;
 
-				str += (GetBitInMask(mask, i)) ? 1 : 0;
+				reusableStringBuilder.Append((GetBitInMask(mask, i)) ? 1 : 0);
 
 				if (i == highliteNum)
-					str += "</b>";
+					reusableStringBuilder.Length = 0;
 
 				if (i % 4 == 0)
-					str += " ";
+					reusableStringBuilder.Append(" ");
 			}
-			return str;
+			return reusableStringBuilder.ToString();
 		}
 
 		public static int GetTrueBitOfLayerMask(int layermask)

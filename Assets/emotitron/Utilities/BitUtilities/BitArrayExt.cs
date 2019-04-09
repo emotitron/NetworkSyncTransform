@@ -22,7 +22,7 @@ namespace emotitron.Utilities
 			{
 
 				if (i == hiliteBit)
-					str.Append("<b>" + (ba[i] ? 1 : 0) + "</b>");
+					str.Append("<b>").Append((ba[i] ? 1 : 0)).Append("</b>");
 				else
 					str.Append(ba[i] ? 1 : 0);
 
