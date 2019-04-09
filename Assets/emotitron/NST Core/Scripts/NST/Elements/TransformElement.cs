@@ -43,6 +43,7 @@ namespace emotitron.NST
 		public float drawerHeight;
 		public NetworkSyncTransform nst;
 		public NSTNetAdapter na;
+		public INSTTransformElement nstElement;
 
 		#region Inspector Values
 
@@ -122,9 +123,11 @@ namespace emotitron.NST
 		}
 
 
-		public void Initialize(NetworkSyncTransform _nst)
+		public void Initialize(NetworkSyncTransform _nst, INSTTransformElement _nstElement)
 		{
 			nst = _nst;
+			nstElement = _nstElement;
+
 			na = nst.na ? nst.na : (nst.na = nst.GetComponent<NSTNetAdapter>());
 
 			frameCount = NSTMaster.FRAME_COUNT / nst.sendEveryXTick;
@@ -221,6 +224,12 @@ namespace emotitron.NST
 			if (ghostGO)
 				Apply(e.xform, ghostGO);
 
+			if (!nstElement.Enabled)
+			{
+				bitstream.WriteBool(false);
+				return false;
+			}
+
 			bool forceUpdate = IsUpdateForced(frame);
 
 			// For frames between forced updates, we need to first send a flag bit for if this element is being sent
@@ -234,6 +243,9 @@ namespace emotitron.NST
 					return false;
 
 			}
+			else
+				bitstream.WriteBool(true);
+
 			crusher.Write(compXform, bitstream.Data, ref bitstream.ptr);
 
 			lastSentCompressed.CopyFrom(compXform);
@@ -247,12 +259,12 @@ namespace emotitron.NST
 		{
 			ElementFrame e = frames[frame.frameid];
 
-			bool forcedUpdate = IsUpdateForced(frame);
+			//bool forcedUpdate = IsUpdateForced(frame);
 			bool applyToGhost = ShouldApplyToGhost(frame);
 			bool isCurrentFrame = frame == currentFrame;
 
 			// Only read for the sent bit if not forced, there is no check bit for forced updates (since all clients and server know it is forced)
-			bool hasChanged = forcedUpdate || bitstream.ReadBool();
+			bool hasChanged = /*forcedUpdate || */bitstream.ReadBool();
 
 			/// If no info was included, or if we have a scene mismatch, indicate this transform update as invalid.
 			if (!hasChanged/* || frame.sceneIndex != NSTSceneManager.CurrentSceneIndex*/)
@@ -280,8 +292,13 @@ namespace emotitron.NST
 
 		public void MirrorToClients(ref UdpBitStream outstream, Frame frame, bool hasChanged)
 		{
-			// Write the used flag (if this is not a forced update) and determine if an update needs to be written.
-			if (WriteUpdateFlag(ref outstream, frame, hasChanged) == false)
+			//// Write the used flag (if this is not a forced update) and determine if an update needs to be written.
+			//if (WriteUpdateFlag(ref outstream, frame, hasChanged) == false)
+			//	return;
+
+			outstream.WriteBool(hasChanged);
+
+			if (!hasChanged)
 				return;
 
 			ElementFrame e = frames[frame.frameid];
@@ -308,23 +325,23 @@ namespace emotitron.NST
 		}
 
 
-		/// <summary>
-		/// Write the flag bool if this is not a forced update, and return true if the element should be written to the stream (the value of the flag).
-		/// </summary>
-		protected bool WriteUpdateFlag(ref UdpBitStream outstream, Frame frame, bool hasChanged)
-		{
-			bool forcedUpdate = IsUpdateForced(frame);
+		///// <summary>
+		///// Write the flag bool if this is not a forced update, and return true if the element should be written to the stream (the value of the flag).
+		///// </summary>
+		//protected bool WriteUpdateFlag(ref UdpBitStream outstream, Frame frame, bool hasChanged)
+		//{
+		//	bool forcedUpdate = IsUpdateForced(frame);
 
-			// For non-forced updates we need to set the used flag.
-			if (!forcedUpdate)
-				outstream.WriteBool(hasChanged);
+		//	// For non-forced updates we need to set the used flag.
+		//	if (!forcedUpdate)
+		//		outstream.WriteBool(hasChanged);
 
-			// exit if we are not writing a compressed value.
-			if (!hasChanged && !forcedUpdate)
-				return false;
+		//	// exit if we are not writing a compressed value.
+		//	if (!hasChanged && !forcedUpdate)
+		//		return false;
 
-			return true;
-		}
+		//	return true;
+		//}
 
 		/// <summary>
 		/// This is the logic for when a frame must be sent using info available to all clients/server, so in these cases elements do not need to send a "used" bit

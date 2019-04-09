@@ -108,7 +108,7 @@ namespace emotitron.NST
 				if (transformElements[i].gameobject == null)
 					transformElements[i].gameobject = iTransElement[i].SrcGameObject;
 
-				transformElements[i].Initialize(nst);
+				transformElements[i].Initialize(nst, iTransElement[i]);
 
 				//Debug.Log(nst.rootRotationElement.frames[0]);
 

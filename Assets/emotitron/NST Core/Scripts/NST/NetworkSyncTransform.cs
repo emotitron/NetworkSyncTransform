@@ -31,6 +31,7 @@ namespace emotitron.NST
 		public GameObject SrcGameObject { get { return gameObject; } }
 		public TransformElement TransElement { get { return rootRotationElement; } }
 		public NetworkSyncTransform Nst { get { return this; } }
+		public bool Enabled { get { return this.enabled; } }
 
 		// IOfftick interface
 		public int OffticksPending { get { return customEventQueue.Count; } }

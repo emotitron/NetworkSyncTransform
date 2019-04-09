@@ -10,6 +10,7 @@ namespace emotitron.NST
 	{
 		GameObject SrcGameObject { get; }
 		TransformElement TransElement { get; }
+		bool Enabled { get; }
 	}
 
 	public interface ITransformElements

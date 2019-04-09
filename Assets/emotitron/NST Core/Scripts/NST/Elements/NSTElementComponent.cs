@@ -13,6 +13,8 @@ namespace emotitron.NST
 	/// </summary>
 	public abstract class NSTElementComponent : NSTComponent
 	{
+		public bool Enabled { get { return this.enabled; } }
+
 		[HideInInspector] public NSTElementsEngine nstElementsEngine;
 		public abstract TransformElement TransElement { get; }
 
