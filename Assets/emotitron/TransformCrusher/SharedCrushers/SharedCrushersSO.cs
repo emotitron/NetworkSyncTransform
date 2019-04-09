@@ -70,7 +70,7 @@ namespace emotitron.Compression
 
 #if UNITY_EDITOR
 
-		public override string AssetPath { get { return @"Assets/emotitron/Compression/TransformCrusher/SharedCrushers/Resources/"; } }
+		public override string AssetPath { get { return @"Assets/emotitron/TransformCrusher/SharedCrushers/Resources/"; } }
 
 		public override string HelpURL
 		{

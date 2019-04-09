@@ -72,7 +72,7 @@ namespace emotitron.NST
 #if UNITY_EDITOR
 		//private bool expanded = true;
 
-		public override string AssetPath { get { return @"Assets/emotitron/NST Core 5/Resources/"; } }
+		public override string AssetPath { get { return @"Assets/emotitron/NST Core/Resources/"; } }
 
 		public const string HELP_URL = "https://docs.google.com/document/d/1nPWGC_2xa6t4f9P0sI7wAe4osrg4UP0n_9BVYnr5dkQ/edit#bookmark=kix.hy52qj594m2v";
 		public override string HelpURL { get { return HELP_URL; } }

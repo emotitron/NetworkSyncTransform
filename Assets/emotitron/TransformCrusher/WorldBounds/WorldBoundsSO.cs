@@ -18,7 +18,7 @@ namespace emotitron.Compression
 
 		public const string HELP_URL = "";
 		public override string HelpURL { get { return HELP_URL; } }
-		public override string AssetPath { get { return @"Assets/emotitron/Compression/TransformCrusher/WorldBounds/Resources/"; } }
+		public override string AssetPath { get { return @"Assets/emotitron/TransformCrusher/WorldBounds/Resources/"; } }
 
 
 		//[InitializeOnLoadMethod]

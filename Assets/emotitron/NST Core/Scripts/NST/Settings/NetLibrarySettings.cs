@@ -34,7 +34,7 @@ namespace emotitron.NST
 
 		public override string SettingsName { get { return "Network Library Settings"; } }
 
-		public override string AssetPath { get { return @"Assets/emotitron/NST Core 5/Resources/"; } }
+		public override string AssetPath { get { return @"Assets/emotitron/NST Core/Resources/"; } }
 
 		public const string HELP_URL = "https://docs.google.com/document/d/1SOm5aZHBed0xVlPk8oX2_PsQ50KTJFgcr8dDXmtdwh8/edit#bookmark=id.c0t8i8v9ghji";
 		public override string HelpURL { get { return HELP_URL; } }
