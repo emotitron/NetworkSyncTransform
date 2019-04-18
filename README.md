@@ -19,6 +19,9 @@ Additionally, the circular buffer reduces data rates by packaging all outgoing d
 - **Element Add-on available** on the Asset Store, for syncing child turrets, arms, heads, etc.
 - **Animator Add-on available** on the Asset Store for syncing the unity Animator using NST's buffer and compression.
 
+## Current Work
+I am trying to avoid making any additions in functionality to NST, as I am working on a totally Server Authority tick based replacement for the entire system using everything I learned making NST. However I am pulling parts from NST that I liked (Like Transform Crusher was separated out in this process), and as I reuse those in the new project - any improvements and/or changes to the components are fed back into NST to keep my library unified and to avoid a bunch of forks. This means NST while not expanding, is being maintained. I will continue to maintain it until Unity throws a REALLY breaking change at it that is too much work to adapt the project to. The 2017 LTS likely will have indefinite support.
+
 ## Free NST Core Download
 You are welcome to use this library for games, however scripts/components not explicity marked with MIT licenses may not sold be part of assets libraries.
 
