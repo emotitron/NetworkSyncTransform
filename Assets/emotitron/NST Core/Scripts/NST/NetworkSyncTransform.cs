@@ -24,8 +24,8 @@ namespace emotitron.NST
 	{
 		public const int VersionMajor = 5;
 		public const int VersionMinor = 7;
-		public const int VersionRevision = 5;
-		public const int Build = 5705;
+		public const int VersionRevision = 6;
+		public const int Build = 5706;
 
 		// Interface requirements
 		public GameObject SrcGameObject { get { return gameObject; } }
