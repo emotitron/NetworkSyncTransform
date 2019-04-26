@@ -26,8 +26,6 @@
 #define UNITY_ASSERTIONS
 #endif
 
-using emotitron.Compression.Utilities;
-
 namespace emotitron.Compression
 {
 	/// <summary>

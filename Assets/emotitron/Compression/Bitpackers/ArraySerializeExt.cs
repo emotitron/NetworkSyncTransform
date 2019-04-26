@@ -389,7 +389,7 @@ namespace emotitron.Compression
 			const int MODULUS = MAXBITS - 1;
 			int offset = bitposition & MODULUS;
 			int index = bitposition >> 3;
-
+			
 			ulong mask = ulong.MaxValue >> (64 - bits);
 			ulong offsetmask = mask << offset;
 			ulong offsetcomp = value << offset;
@@ -399,7 +399,7 @@ namespace emotitron.Compression
 			offset = MAXBITS - offset;
 
 			// These are complete overwrites of the array element, so no masking is required
-			while (offset < (bits - 8))
+			while (offset < (bits-8))
 			{
 				index++;
 				offsetcomp = value >> offset;
@@ -428,7 +428,7 @@ namespace emotitron.Compression
 			const int MODULUS = MAXBITS - 1;
 			int offset = bitposition & MODULUS;
 			int index = bitposition >> 5;
-
+			
 
 			ulong mask = ulong.MaxValue >> (64 - bits);
 			ulong offsetmask = mask << offset;
@@ -600,7 +600,7 @@ namespace emotitron.Compression
 		#endregion
 
 		#region Secondary Readers
-
+		
 		// Ulong
 		[System.Obsolete("Just use Read(), it return a ulong already.")]
 		public static ulong ReadUInt64(this byte[] buffer, ref int bitposition, int bits = 64)

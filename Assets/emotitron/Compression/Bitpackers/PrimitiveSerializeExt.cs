@@ -317,7 +317,7 @@ namespace emotitron.Compression
 
 		public static void Inject(this bool value, ref ulong buffer, ref int bitposition)
 		{
-			Inject((ulong)(value ? 1 : 0), ref buffer, ref bitposition, 1);
+			Inject((ulong)(value ? 1 : 0), ref buffer,  ref bitposition, 1);
 		}
 		public static void Inject(this bool value, ref uint buffer, ref int bitposition)
 		{

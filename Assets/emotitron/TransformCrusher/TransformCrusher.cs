@@ -64,9 +64,9 @@ namespace emotitron.Compression
 		public Transform defaultTransform;
 
 		// Set up the default Crushers so they add up to 64 bits
-		[SerializeField] private ElementCrusher posCrusher;
-		[SerializeField] private ElementCrusher rotCrusher;
-		[SerializeField] private ElementCrusher sclCrusher;
+		[SerializeField] protected ElementCrusher posCrusher;
+		[SerializeField] protected ElementCrusher rotCrusher;
+		[SerializeField] protected ElementCrusher sclCrusher;
 
 
 		/// <summary>
@@ -161,7 +161,7 @@ namespace emotitron.Compression
 			ConstructDefault(isStatic);
 		}
 
-		private void ConstructDefault(bool isStatic = false)
+		protected virtual void ConstructDefault(bool isStatic = false)
 		{
 			if (isStatic)
 			{
@@ -195,7 +195,7 @@ namespace emotitron.Compression
 #if UNITY_EDITOR
 #pragma warning disable 0414
 		[SerializeField]
-		private bool isExpanded = true;
+		protected bool isExpanded = true;
 #pragma warning restore 0414
 #endif
 
@@ -208,15 +208,15 @@ namespace emotitron.Compression
 		#region Cached compression values
 
 
-		[NonSerialized] private readonly int[] cached_pBits = new int[4];
-		[NonSerialized] private readonly int[] cached_rBits = new int[4];
-		[NonSerialized] private readonly int[] cached_sBits = new int[4];
-		[NonSerialized] private readonly int[] _cached_total = new int[4];
+		[NonSerialized] protected readonly int[] cached_pBits = new int[4];
+		[NonSerialized] protected readonly int[] cached_rBits = new int[4];
+		[NonSerialized] protected readonly int[] cached_sBits = new int[4];
+		[NonSerialized] protected readonly int[] _cached_total = new int[4];
 		public ReadOnlyCollection<int> cached_total;
 
-		private bool cached;
+		protected bool cached;
 
-		public void CacheValues()
+		public virtual void CacheValues()
 		{
 			for (int i = 0; i < 4; ++i)
 			{
@@ -224,7 +224,7 @@ namespace emotitron.Compression
 				cached_rBits[i] = (rotCrusher == null) ? 0 : rotCrusher.Cached_TotalBits[i];  //TallyBits((BitCullingLevel)i);
 				cached_sBits[i] = (sclCrusher == null) ? 0 : sclCrusher.Cached_TotalBits[i];  //TallyBits((BitCullingLevel)i);
 				_cached_total[i] = cached_pBits[i] + cached_rBits[i] + cached_sBits[i];
-				cached_total = Array.AsReadOnly(_cached_total); 
+				cached_total = Array.AsReadOnly(_cached_total);
 			}
 
 			//TODO: cached likely no longer needed with bootstrapping and callbacks
@@ -233,7 +233,7 @@ namespace emotitron.Compression
 
 		#endregion
 
-		#region Byte[] Writers
+		#region Array Writers
 
 		public void Write(CompressedMatrix cm, byte[] buffer, ref int bitposition, BitCullingLevel bcl = BitCullingLevel.NoCulling)
 		{
@@ -311,9 +311,7 @@ namespace emotitron.Compression
 
 		#endregion
 
-
-
-		#region Byte[] Readers
+		#region Array Readers
 
 		//[System.Obsolete()]
 		public Matrix ReadAndDecompress(ulong[] array, BitCullingLevel bcl = BitCullingLevel.NoCulling)
@@ -429,9 +427,9 @@ namespace emotitron.Compression
 			nonalloc.crusher = this;
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Read(nonalloc.cPos, buffer, ref bitposition, IncludedAxes.XYZ, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Read(nonalloc.cRot, buffer, ref bitposition, IncludedAxes.XYZ, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Read(nonalloc.cScl, buffer, ref bitposition, IncludedAxes.XYZ, bcl);
 		}
 
@@ -444,9 +442,9 @@ namespace emotitron.Compression
 			nonalloc.crusher = this;
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Read(nonalloc.cPos, buffer, ref bitposition, IncludedAxes.XYZ, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Read(nonalloc.cRot, buffer, ref bitposition, IncludedAxes.XYZ, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Read(nonalloc.cScl, buffer, ref bitposition, IncludedAxes.XYZ, bcl);
 		}
 
@@ -471,9 +469,9 @@ namespace emotitron.Compression
 			nonalloc.crusher = this;
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Write(nonalloc.cPos, transform, ref buffer, ref bitposition, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Write(nonalloc.cRot, transform, ref buffer, ref bitposition, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Write(nonalloc.cScl, transform, ref buffer, ref bitposition, bcl);
 		}
 
@@ -492,9 +490,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Write(transform, ref buffer, ref bitposition, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Write(transform, ref buffer, ref bitposition, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Write(transform, ref buffer, ref bitposition, bcl);
 		}
 
@@ -509,9 +507,9 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Write(cm.cPos, ref bitstream, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Write(cm.cRot, ref bitstream, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Write(cm.cScl, ref bitstream, bcl);
 		}
 
@@ -525,9 +523,9 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Write(cm.cPos, ref buffer, ref bitposition, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Write(cm.cRot, ref buffer, ref bitposition, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Write(cm.cScl, ref buffer, ref bitposition, bcl);
 		}
 
@@ -547,9 +545,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Write(nonalloc.cPos, ref bitstream, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Write(nonalloc.cRot, ref bitstream, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Write(nonalloc.cScl, ref bitstream, bcl);
 		}
 
@@ -570,9 +568,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Write(nonalloc.cPos, ref bitstream, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Write(nonalloc.cRot, ref bitstream, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Write(nonalloc.cScl, ref bitstream, bcl);
 		}
 		/// <summary>
@@ -592,9 +590,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Write(CompressedMatrix.reusable.cPos, ref bitstream, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Write(CompressedMatrix.reusable.cRot, ref bitstream, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Write(CompressedMatrix.reusable.cScl, ref bitstream, bcl);
 		}
 
@@ -722,9 +720,9 @@ namespace emotitron.Compression
 			nonalloc.crusher = this;
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Read(nonalloc.cPos, ref bitstream, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Read(nonalloc.cRot, ref bitstream, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Read(nonalloc.cScl, ref bitstream, bcl);
 		}
 
@@ -780,9 +778,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[(int)bcl] > 0)
 				posCrusher.Read(nonalloc.cPos, buffer, ref bitposition, bcl);
-			if (cached_rBits[(int)bcl]> 0)
+			if (cached_rBits[(int)bcl] > 0)
 				rotCrusher.Read(nonalloc.cRot, buffer, ref bitposition, bcl);
-			if (cached_sBits[(int)bcl]> 0)
+			if (cached_sBits[(int)bcl] > 0)
 				sclCrusher.Read(nonalloc.cScl, buffer, ref bitposition, bcl);
 		}
 		//[System.Obsolete("Bitstream is slated to be removed. Use the Array and Primitive serializers instead.")]
@@ -823,8 +821,8 @@ namespace emotitron.Compression
 
 			nonalloc.crusher = this;
 			if (cached_pBits[0] > 0) posCrusher.Compress(nonalloc.cPos, matrix.position); else nonalloc.cPos.Clear();
-			if (cached_rBits[0]> 0) rotCrusher.Compress(nonalloc.cRot, matrix.rotation); else nonalloc.cRot.Clear();
-			if (cached_sBits[0]> 0) sclCrusher.Compress(nonalloc.cScl, matrix.scale); else nonalloc.cScl.Clear();
+			if (cached_rBits[0] > 0) rotCrusher.Compress(nonalloc.cRot, matrix.rotation); else nonalloc.cRot.Clear();
+			if (cached_sBits[0] > 0) sclCrusher.Compress(nonalloc.cScl, matrix.scale); else nonalloc.cScl.Clear();
 
 		}
 		[System.Obsolete("Bitstream is slated to be removed. Use the Array and Primitive serializers instead.")]
@@ -841,8 +839,8 @@ namespace emotitron.Compression
 
 			nonalloc.crusher = this;
 			if (cached_pBits[0] > 0) posCrusher.Compress(nonalloc.cPos, transform); else nonalloc.cPos.Clear();
-			if (cached_rBits[0]> 0) rotCrusher.Compress(nonalloc.cRot, transform); else nonalloc.cRot.Clear();
-			if (cached_sBits[0]> 0) sclCrusher.Compress(nonalloc.cScl, transform); else nonalloc.cScl.Clear();
+			if (cached_rBits[0] > 0) rotCrusher.Compress(nonalloc.cRot, transform); else nonalloc.cRot.Clear();
+			if (cached_sBits[0] > 0) sclCrusher.Compress(nonalloc.cScl, transform); else nonalloc.cScl.Clear();
 
 		}
 		//[System.Obsolete("Use the nonalloc overload instead and supply a target CompressedMatrix. CompressedMatrix is now a class rather than a struct")]
@@ -890,7 +888,7 @@ namespace emotitron.Compression
 				else nonalloc.cRot.Clear();
 			}
 
-			if (cached_sBits[0]> 0) sclCrusher.Compress(nonalloc.cScl, rb.transform);
+			if (cached_sBits[0] > 0) sclCrusher.Compress(nonalloc.cScl, rb.transform);
 			else nonalloc.cScl.Clear();
 
 		}
@@ -910,9 +908,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[0] > 0)
 				posCrusher.CompressAndWrite(defaultTransform, ref bitstream);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.CompressAndWrite(defaultTransform, ref bitstream);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.CompressAndWrite(defaultTransform, ref bitstream);
 		}
 
@@ -930,9 +928,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[0] > 0)
 				posCrusher.CompressAndWrite(matrix.position, ref bitstream);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.CompressAndWrite(matrix.rotation, ref bitstream);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.CompressAndWrite(matrix.scale, ref bitstream);
 		}
 		/// <summary>
@@ -948,9 +946,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[0] > 0)
 				posCrusher.CompressAndWrite(matrix.position, buffer, ref bitposition);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.CompressAndWrite(matrix.rotation, buffer, ref bitposition);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.CompressAndWrite(matrix.scale, buffer, ref bitposition);
 		}
 
@@ -966,9 +964,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[0] > 0)
 				posCrusher.CompressAndWrite(transform, ref bitstream);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.CompressAndWrite(transform, ref bitstream);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.CompressAndWrite(transform, ref bitstream);
 		}
 
@@ -983,9 +981,9 @@ namespace emotitron.Compression
 
 			if (cached_pBits[0] > 0)
 				posCrusher.CompressAndWrite(transform, buffer, ref bitposition);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.CompressAndWrite(transform, buffer, ref bitposition);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.CompressAndWrite(transform, buffer, ref bitposition);
 		}
 
@@ -1002,14 +1000,14 @@ namespace emotitron.Compression
 
 			if (cached_pBits[0] > 0)
 				posCrusher.CompressAndWrite(rb.position, buffer, ref bitposition);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 			{
 				if (rotCrusher.TRSType == TRSType.Quaternion)
 					rotCrusher.CompressAndWrite(rb.rotation, buffer, ref bitposition);
 				else
 					rotCrusher.CompressAndWrite(rb.rotation.eulerAngles, buffer, ref bitposition);
 			}
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.CompressAndWrite(rb.transform, buffer, ref bitposition);
 		}
 #endif
@@ -1077,8 +1075,8 @@ namespace emotitron.Compression
 			nonalloc.Set(
 				this,
 				(cached_pBits[0] > 0) ? (Vector3)posCrusher.Decompress(compMatrix.cPos) : new Vector3(),
-				(cached_rBits[0]> 0) ? rotCrusher.Decompress(compMatrix.cRot) : new Element(),
-				(cached_sBits[0]> 0) ? (Vector3)sclCrusher.Decompress(compMatrix.cScl) : new Vector3()
+				(cached_rBits[0] > 0) ? rotCrusher.Decompress(compMatrix.cRot) : new Element(),
+				(cached_sBits[0] > 0) ? (Vector3)sclCrusher.Decompress(compMatrix.cScl) : new Vector3()
 				);
 		}
 		[System.Obsolete("Use the nonalloc overload instead and supply a target Matrix. Matrix is now a class rather than a struct")]
@@ -1090,8 +1088,8 @@ namespace emotitron.Compression
 			return new Matrix(
 				this,
 				(cached_pBits[0] > 0) ? (Vector3)posCrusher.Decompress(compMatrix.cPos) : new Vector3(),
-				(cached_rBits[0]> 0) ? rotCrusher.Decompress(compMatrix.cRot) : new Element(),
-				(cached_sBits[0]> 0) ? (Vector3)sclCrusher.Decompress(compMatrix.cScl) : new Vector3()
+				(cached_rBits[0] > 0) ? rotCrusher.Decompress(compMatrix.cRot) : new Element(),
+				(cached_sBits[0] > 0) ? (Vector3)sclCrusher.Decompress(compMatrix.cScl) : new Vector3()
 				);
 		}
 
@@ -1109,9 +1107,9 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[0] > 0)
 				posCrusher.Set(rb, cmatrix.cPos);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.Set(rb, cmatrix.cRot);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.Apply(rb.transform, cmatrix.cScl);
 		}
 		/// <summary>
@@ -1122,9 +1120,9 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[0] > 0)
 				posCrusher.Set(rb, matrix.position);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.Set(rb, matrix.rotation);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.Apply(rb.transform, matrix.scale);
 		}
 		/// <summary>
@@ -1164,9 +1162,9 @@ namespace emotitron.Compression
 			Move(rb, cmatrix.Decompress());
 			if (cached_pBits[0] > 0)
 				posCrusher.Move(rb, cmatrix.cPos);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.Move(rb, cmatrix.cRot);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.Apply(rb.transform, cmatrix.cScl);
 		}
 		/// <summary>
@@ -1177,9 +1175,9 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[0] > 0)
 				posCrusher.Move(rb, matrix.position);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.Move(rb, matrix.rotation);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.Apply(rb.transform, matrix.scale);
 		}
 		/// <summary>
@@ -1218,9 +1216,9 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[0] > 0)
 				posCrusher.Apply(rb, cmatrix.cPos);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.Apply(rb, cmatrix.cRot);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.Apply(rb.transform, cmatrix.cScl);
 		}
 
@@ -1232,9 +1230,9 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[0] > 0)
 				posCrusher.Apply(rb, matrix.position);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.Apply(rb, matrix.rotation);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.Apply(rb.transform, matrix.scale);
 		}
 #endif
@@ -1291,9 +1289,9 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[0] > 0)
 				posCrusher.Apply(t, cmatrix.cPos);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.Apply(t, cmatrix.cRot);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.Apply(t, cmatrix.cScl);
 		}
 
@@ -1316,14 +1314,45 @@ namespace emotitron.Compression
 		{
 			if (cached_pBits[0] > 0)
 				posCrusher.Apply(transform, matrix.position);
-			if (cached_rBits[0]> 0)
+			if (cached_rBits[0] > 0)
 				rotCrusher.Apply(transform, matrix.rotation);
-			if (cached_sBits[0]> 0)
+			if (cached_sBits[0] > 0)
 				sclCrusher.Apply(transform, matrix.scale);
 		}
 
 
 		#endregion
+
+		/// <summary>
+		/// Capture the values of a Rigidbody. Applies the lossy decompressed value to the Matrix.
+		/// </summary>
+		/// <param name="m">Lossy decompressed value is stored.</param>
+		public void Capture(Rigidbody rb, CompressedMatrix cm, Matrix m)
+		{
+			Compress(cm, rb);
+			Decompress(m, cm);
+		}
+
+		/// <summary>
+		/// Capture the values of a Rigidbody.
+		/// </summary>
+		/// <param name="m">Lossy decompressed value is stored.</param>
+		public void Capture(Transform tr, CompressedMatrix cm, Matrix m)
+		{
+			// pos
+			posCrusher.Compress(cm.cPos, tr.position);
+			m.position = (Vector3)posCrusher.Decompress(cm.cPos);
+
+			// rot
+			rotCrusher.Compress(cm.cRot, tr);
+			m.rotation = rotCrusher.Decompress(cm.cRot);
+
+			// scl
+			sclCrusher.Compress(cm.cScl, tr);
+			m.scale = (Vector3)sclCrusher.Decompress(cm.cScl);
+
+		}
+
 
 		/// <summary>
 		/// Get the total number of bits this Transform is set to write.

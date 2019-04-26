@@ -75,13 +75,25 @@ namespace emotitron.Compression
 			else
 			{
 
-				/// When we have bounds for a group, switch back to Resolution mode
-				if (xc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed)
+				/// When we have bounds for a group, switch back to Resolution mode if we are in a mode hostile to trying to set things
+				if (xc.BitsDeterminedBy > 0 || 
+					xc.BitsDeterminedBy == BitsDeterminedBy.SetBits || xc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || xc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat)
+				{
+					xc.Resolution = 100;
 					xc.BitsDeterminedBy = BitsDeterminedBy.Resolution;
-				if (yc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed)
+				}
+				if (yc.BitsDeterminedBy > 0 ||
+					yc.BitsDeterminedBy == BitsDeterminedBy.SetBits || yc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || yc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat)
+				{
+					yc.Resolution = 100;
 					yc.BitsDeterminedBy = BitsDeterminedBy.Resolution;
-				if (zc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed)
+				}
+				if (zc.BitsDeterminedBy > 0 || 
+					zc.BitsDeterminedBy == BitsDeterminedBy.SetBits || zc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || zc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat)
+				{
+					zc.Resolution = 100;
 					zc.BitsDeterminedBy = BitsDeterminedBy.Resolution;
+				}
 
 				// must have a starting bounds to encapsulate, otherwise it starts encapsulating a 0,0,0 center 
 				// which may not be desired if the group doesn't encapsulate 0,0,0

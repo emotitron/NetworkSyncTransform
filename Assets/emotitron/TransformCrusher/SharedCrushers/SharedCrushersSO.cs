@@ -36,11 +36,15 @@ namespace emotitron.Compression
 		public List<int> sharedTransformCrusherHashes = new List<int>();
 		public List<SharedCrusherDefineT> sharedTransformCrusherDef = new List<SharedCrusherDefineT>();
 
+		public List<int> sharedRigidbodyCrusherHashes = new List<int>();
+		public List<SharedCrusherDefineR> sharedRigidbodyCrusherDef = new List<SharedCrusherDefineR>();
+
 		public List<int> sharedElementCrusherHashes = new List<int>();
 		public List<SharedCrusherDefineE> sharedElementCrusherDef = new List<SharedCrusherDefineE>();
 
 		public List<int> sharedFloatCrusherHashes = new List<int>();
 		public List<SharedCrusherDefineF> sharedFloatCrusherDef = new List<SharedCrusherDefineF>();
+
 
 		[System.Serializable]
 		public class SharedCrusherDefineT : SharedCrusherDefine
@@ -49,6 +53,14 @@ namespace emotitron.Compression
 			public TransformCrusher crusherHold;
 			public override Crusher CrusherRef { get { return crusherRef; } set { crusherRef = value as TransformCrusher; } }
 			public override Crusher CrusherHold { get { return crusherHold; } set { crusherHold = value as TransformCrusher; } }
+		}
+		[System.Serializable]
+		public class SharedCrusherDefineR : SharedCrusherDefine
+		{
+			public RigidbodyCrusher crusherRef;
+			public RigidbodyCrusher crusherHold;
+			public override Crusher CrusherRef { get { return crusherRef; } set { crusherRef = value as RigidbodyCrusher; } }
+			public override Crusher CrusherHold { get { return crusherHold; } set { crusherHold = value as RigidbodyCrusher; } }
 		}
 		[System.Serializable]
 		public class SharedCrusherDefineE : SharedCrusherDefine
@@ -113,6 +125,7 @@ namespace emotitron.Compression
 
 			List<int> hashlist =
 				(typeof(T) == typeof(TransformCrusher)) ? sharedTransformCrusherHashes :
+				(typeof(T) == typeof(RigidbodyCrusher)) ? sharedRigidbodyCrusherHashes :
 				(typeof(T) == typeof(ElementCrusher)) ? sharedElementCrusherHashes :
 				sharedFloatCrusherHashes;
 
@@ -121,6 +134,8 @@ namespace emotitron.Compression
 
 			if (typeof(T) == typeof(TransformCrusher))
 				def = (exists) ? sharedTransformCrusherDef[index] : new SharedCrusherDefineT();
+			else if (typeof(T) == typeof(RigidbodyCrusher))
+				def = (exists) ? sharedRigidbodyCrusherDef[index] : new SharedCrusherDefineR();
 			else if (typeof(T) == typeof(ElementCrusher))
 				def = (exists) ? sharedElementCrusherDef[index] : new SharedCrusherDefineE();
 			else
@@ -136,10 +151,10 @@ namespace emotitron.Compression
 			/// If there is no defined crusherRef (this was not completely initialized) create it now using the crusher values of the instance
 			if (def.CrusherRef == null)
 			{
-				if (instance.Crusher == null)
+				if (ReferenceEquals(instance.Crusher, null))
 					instance.Crusher = new T();
 
-				if (def.CrusherHold == null)
+				if (ReferenceEquals(def.CrusherHold, null))
 					def.CrusherHold = new T();
 
 				def.CrusherRef = instance.Crusher;
@@ -165,6 +180,8 @@ namespace emotitron.Compression
 
 				if (typeof(T) == typeof(TransformCrusher))
 					sharedTransformCrusherDef.Add(def as SharedCrusherDefineT);
+				else if (typeof(T) == typeof(RigidbodyCrusher))
+					sharedRigidbodyCrusherDef.Add(def as SharedCrusherDefineR);
 				else if (typeof(T) == typeof(ElementCrusher))
 					sharedElementCrusherDef.Add(def as SharedCrusherDefineE);
 				else
@@ -177,6 +194,7 @@ namespace emotitron.Compression
 		{
 			List<int> hashlist =
 				(typeof(T) == typeof(TransformCrusher)) ? sharedTransformCrusherHashes :
+				(typeof(T) == typeof(RigidbodyCrusher)) ? sharedRigidbodyCrusherHashes :
 				(typeof(T) == typeof(ElementCrusher)) ? sharedElementCrusherHashes :
 				sharedFloatCrusherHashes;
 
@@ -187,6 +205,9 @@ namespace emotitron.Compression
 
 			if (typeof(T) == typeof(TransformCrusher))
 				return sharedTransformCrusherDef[index];
+
+			if (typeof(T) == typeof(RigidbodyCrusher))
+				return sharedRigidbodyCrusherDef[index];
 
 			if (typeof(T) == typeof(ElementCrusher))
 				return sharedElementCrusherDef[index];
@@ -218,6 +239,28 @@ namespace emotitron.Compression
 					}
 				}
 			}
+
+			/// RigidbodyCrusher collection
+			for (int i = sharedRigidbodyCrusherHashes.Count - 1; i > -1; --i)
+			{
+				var v = sharedRigidbodyCrusherDef[i];
+				if (!v.fieldName.DoesFieldExistInLine<RigidbodyCrusher>(v.fileName, v.linenum))
+				{
+					sharedRigidbodyCrusherHashes.RemoveAt(i);
+					sharedRigidbodyCrusherDef.RemoveAt(i);
+					continue;
+				}
+				if (v.shareBy == SharedCrusherDefine.ShareBy.Prefab)
+				{
+					if (EditorUtility.InstanceIDToObject(v.instanceId) == null)
+					{
+						sharedRigidbodyCrusherHashes.RemoveAt(i);
+						sharedRigidbodyCrusherDef.RemoveAt(i);
+						continue;
+					}
+				}
+			}
+
 
 			/// ElementCrusher collection
 			for (int i = sharedElementCrusherHashes.Count - 1; i > -1; --i)
@@ -267,6 +310,9 @@ namespace emotitron.Compression
 		{
 			Single.sharedTransformCrusherHashes.Clear();
 			single.sharedTransformCrusherDef.Clear();
+
+			Single.sharedRigidbodyCrusherHashes.Clear();
+			single.sharedRigidbodyCrusherDef.Clear();
 
 			single.sharedElementCrusherHashes.Clear();
 			single.sharedElementCrusherDef.Clear();

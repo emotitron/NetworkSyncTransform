@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
+using System.Text;
 using UnityEngine;
 
 namespace emotitron.Compression
@@ -185,19 +186,19 @@ namespace emotitron.Compression
 			return (byte)buffer;
 		}
 
-		public static explicit operator ulong[](CompressedElement ce)
+		public static explicit operator ulong[] (CompressedElement ce)
 		{
 			ce.AsArray64(reusableArray64);
 			return reusableArray64;
 		}
 
-		public static explicit operator uint[](CompressedElement ce)
+		public static explicit operator uint[] (CompressedElement ce)
 		{
 			ce.AsArray32(reusableArray32);
 			return reusableArray32;
 		}
 
-		public static explicit operator byte[](CompressedElement ce)
+		public static explicit operator byte[] (CompressedElement ce)
 		{
 			ce.AsArray8(reusableArray8);
 			return reusableArray8;
@@ -793,6 +794,37 @@ namespace emotitron.Compression
 	public static class CompressedElementExt
 	{
 		public static System.UInt32[] reusableInts = new System.UInt32[3];
+
+		public static StringBuilder AppendSB(this StringBuilder strb, CompressedElement ce)
+		{
+			if (ReferenceEquals(ce, null))
+			{
+				strb.Append("[Null CompElement]");
+			}
+			else
+			{
+				var crusher = ce.crusher;
+				if (crusher == null)
+				{
+					strb.Append("[CE Null Crusher]");
+				}
+				else if (crusher.TRSType == TRSType.Quaternion)
+				{
+					strb.Append(crusher.TRSType).Append(" cQuat: [").Append(ce.cQuat.cvalue).Append("]");
+				}
+				else if (crusher.TRSType == TRSType.Scale && crusher.uniformAxes != ElementCrusher.UniformAxes.NonUniform)
+				{
+					strb.Append(crusher.TRSType).Append(" cUni: [").Append(crusher.uniformAxes).Append(" : ").Append(ce.cUniform.cvalue).Append("]");
+				}
+				else
+				{
+					strb.Append(crusher.TRSType).Append(" cXYZ: [x:").Append(ce.cx.cvalue).Append(" y:").Append(ce.cy.cvalue).Append(" z:").Append(ce.cz.cvalue).Append("]");
+				}
+
+			}
+			return strb;
+		}
+
 
 		public static void GetChangeAmount(uint[] results, CompressedElement a, CompressedElement b)
 		{

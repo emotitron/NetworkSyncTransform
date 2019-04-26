@@ -134,14 +134,15 @@ namespace emotitron.Compression
 		{
 			this.position = rb.position;
 
-			// Not sure the ideal option for scale... lossy or local.
-			this.scale = rb.transform.localScale;
-
 			var rotcrusher = crusher.RotCrusher;
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
 				this.rotation = rb.rotation;
 			else
 				this.rotation = rb.rotation.eulerAngles;
+
+			// Not sure the ideal option for scale... lossy or local.
+			this.scale = rb.transform.localScale;
+
 		}
 
 		public void Clear()

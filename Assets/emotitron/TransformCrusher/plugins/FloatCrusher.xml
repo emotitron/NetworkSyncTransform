@@ -351,7 +351,7 @@
         </member>
         <member name="M:emotitron.Compression.FloatCrusher.#ctor(System.Int32,System.Single,System.Single,emotitron.Compression.Axis,emotitron.Compression.TRSType,System.Boolean)">
             <summary>
-            Constructor.
+            Note: bits will be rounded up to the next valid preset in the Free version. In PRO, bits can be any value from 2-32.
             </summary>
         </member>
         <member name="M:emotitron.Compression.FloatCrusher.#ctor(emotitron.Compression.BitPresets,System.Single,System.Single,emotitron.Compression.Axis,emotitron.Compression.TRSType,System.Boolean)">
@@ -435,6 +435,13 @@
             <param name="min"></param>
             <param name="max"></param>
             <param name="rez"></param>
+            <returns></returns>
+        </member>
+        <member name="M:emotitron.Compression.FloatCrusher.RoundBitsToBestPreset(System.Int32)">
+            <summary>
+            Rounds a bit count up to the nearest level available in the Free version of FloatCrusher.
+            </summary>
+            <param name="bits"></param>
             <returns></returns>
         </member>
         <member name="M:emotitron.Compression.FloatCrusher.GetBitsForMaxValue(System.UInt32)">

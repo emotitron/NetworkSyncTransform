@@ -124,7 +124,6 @@ namespace emotitron.Utilities.Example
 #if PUN_2_OR_NEWER
 
 		public static GameObject localPlayer;
-		public List<Transform> spawnPoints = new List<Transform>();
 		[HideInInspector] public PhotonView pv;
 		
 		private void Awake()

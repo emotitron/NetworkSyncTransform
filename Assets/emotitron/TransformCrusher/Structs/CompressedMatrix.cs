@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using System.Text;
+#endif
+
 namespace emotitron.Compression
 {
 	/// <summary>
@@ -75,9 +79,9 @@ namespace emotitron.Compression
 
 		#region AsArray
 
-		private static readonly ulong[] reusableArray64 = new ulong[6];
-		private static readonly uint[] reusableArray32 = new uint[12];
-		private static readonly byte[] reusableArray8 = new byte[24];
+		protected static readonly ulong[] reusableArray64 = new ulong[6];
+		protected static readonly uint[] reusableArray32 = new uint[12];
+		protected static readonly byte[] reusableArray8 = new byte[24];
 
 		// 64
 		/// <summary>
@@ -206,20 +210,20 @@ namespace emotitron.Compression
 			return (byte)buffer;
 		}
 
-		public static explicit operator ulong[](CompressedMatrix cm)
+		public static explicit operator ulong[] (CompressedMatrix cm)
 		{
 			return cm.AsArray64();
 		}
-		public static explicit operator uint[](CompressedMatrix cm)
+		public static explicit operator uint[] (CompressedMatrix cm)
 		{
 			return cm.AsArray32();
 		}
-		public static explicit operator byte[](CompressedMatrix cm)
+		public static explicit operator byte[] (CompressedMatrix cm)
 		{
 			return cm.AsArray8();
 		}
-		
-#endregion
+
+		#endregion
 
 		/// <summary>
 		/// Serialize all of the contained compressed elements into a new Bitstream struct.
@@ -357,10 +361,21 @@ namespace emotitron.Compression
 			return !a.Equals(b);
 		}
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+		public static StringBuilder strb = new StringBuilder();
+
+		public StringBuilder ToString(StringBuilder strb)
+		{
+			strb.Append("cpos: ").Append(cPos).Append(" crot: ").Append(cRot).Append(" csl: ").Append(cScl);
+			return strb;
+		}
 		public override string ToString()
 		{
-			return "cpos: " + cPos + "\ncrot: " + cRot + "\nsrot " + cScl + "\n compressed matric composite: ";
+			strb.Length = 0;
+			strb.Append("cpos: ").Append(cPos).Append(" crot: ").Append(cRot).Append(" csl: ").Append(cScl);
+			return "cpos: " + cPos + " crot: " + cRot + " srot " + cScl;
 		}
+#endif
 
 		public override bool Equals(object obj)
 		{
@@ -391,6 +406,20 @@ namespace emotitron.Compression
 			return hashCode;
 		}
 	}
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+
+	public static class CompressedMatrixExt
+	{
+		public static StringBuilder AppendSB(this StringBuilder strb, CompressedMatrix cm)
+		{
+
+			strb.Append(" cPos: ").AppendSB(cm.cPos).Append(" cRot: ").AppendSB(cm.cRot).Append(" cScl: ").AppendSB(cm.cScl);
+			return strb;
+		}
+	}
+#endif
+
 }
 
 

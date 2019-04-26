@@ -27,6 +27,9 @@
 using System.Runtime.InteropServices;
 using System;
 
+/// <summary>
+/// Temporariliy using the Utilities namespace to avoid collisions with the DLL still in use by NST
+/// </summary>
 namespace emotitron.Compression.Utilities
 {
 
@@ -217,7 +220,7 @@ namespace emotitron.Compression.Utilities
 			if (len > 2) targetArray[3] = byte3;
 			if (len > 3) targetArray[4] = byte4;
 			if (len > 4) targetArray[5] = byte5;
-			if (len > 5) targetArray[3] = byte6;
+			if (len > 5) targetArray[6] = byte6;
 			if (len > 6) targetArray[7] = byte7;
 		}
 

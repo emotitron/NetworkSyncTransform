@@ -36,7 +36,7 @@
             <param name="bytecount">Number of bytes the quat will be compressed down to.</param>
             <returns>A ulong buffer of the compressed quat.</returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:emotitron.Compression.QuatCompress.CompressToULong(UnityEngine.Quaternion,System.Int32)" -->
+        <!-- Badly formed XML comment ignored for member "M:emotitron.Compression.QuatCompress.CompressToULong(UnityEngine.Quaternion)" -->
         <member name="M:emotitron.Compression.QuatCompress.CompressToUint(UnityEngine.Quaternion)">
             <summary>
             Compress to a 32 bit UInt. NOTE: 32 bits is medium compression (25% of the original Quaternion), small rounding errors 
@@ -51,24 +51,6 @@
             For flawless compression, use CompressToULong or compress to a byte[] or the Ulong buffer using a bitcount in the range of 40 to 50 bits.
             </summary>
         </member>
-        <member name="M:emotitron.Compression.QuatCompress.CompressToByteArray(UnityEngine.Quaternion,System.Int32)">
-            <summary>
-            Writes the quat to a byte[] array. WARNING: this byte[] is reused every time QuatCompress is compresses a quaternion to byte[], so be sure to use
-            the contents immediately (copy them to your bitstream, byte array or wherever the data is going. If you need to queue byte arrays for later writing
-            use the CompressToByteArrayNonAlloc variation and supply a byte[].
-            </summary>
-            <param name="rot"></param>
-            <param name="bytecount"></param>
-            <returns>Returns a recycled byte array. The contents of this may change if not used immediately.</returns>
-        </member>
-        <member name="M:emotitron.Compression.QuatCompress.CompressToByteArrayNonAlloc(UnityEngine.Quaternion,System.Byte[],System.Int32)">
-            <summary>
-            Non-Alloc overload version. Will use the length of the array as the compression level if no level is given.
-            </summary>
-            <param name="arr">Pre-allocated array to fill. Size should be 3-8 bytes.</param>
-            <param name="bytecount">Number of bytes to compress to. Leave blank or set to -1 to use the byte count of the supplied array.</param>
-            <returns></returns>
-        </member>
         <member name="M:emotitron.Compression.QuatCompress.Decompress(System.UInt64,emotitron.Compression.QuatCompress.Cache)">
             <summary>
             Primary Decompression Method. Decompress the 3 channels and missing channel ID from the serialized ULong buffer.
@@ -76,30 +58,6 @@
             <param name="buffer">The ulong that represents the compressed quaternion.</param>
             <param name="bytecount">The number of bytes the quaternion was originally compressed to.</param>
             <returns>The restored Quaternion.</returns>
-        </member>
-        <member name="M:emotitron.Compression.QuatCompress.DecompressToQuat(System.Byte[],System.Int32)">
-            <summary>
-            Read the compressed quaterion from a Byte[] array.
-            </summary>
-        </member>
-        <member name="M:emotitron.Compression.QuatCompress.DecompressToQuat(System.UInt64,System.Int32)">
-            <summary>
-            Decompress Quaternion from ulong buffer.
-            </summary>
-            <param name="totalBits">Number of bits that were used to compressed this quat.</param>
-            <returns></returns>
-        </member>
-        <member name="M:emotitron.Compression.QuatCompress.DecompressToQuat(System.UInt32,System.Int32)">
-            <summary>
-            Decompress Quaternion from uint buffer.
-            <param name="bits">Number of bits that were used to compressed this quat.</param>
-            </summary>
-        </member>
-        <member name="M:emotitron.Compression.QuatCompress.DecompressToQuat(System.Int16,System.Int32)">
-            <summary>
-            Decompress Quaternion from uint buffer.
-            <param name="bits">Number of bits that were used to compressed this quat.</param>
-            </summary>
         </member>
         <member name="M:emotitron.Compression.QuatCompress.ConvertByteArrayToULongBuffer(System.Byte[],System.Int32)">
             <summary>

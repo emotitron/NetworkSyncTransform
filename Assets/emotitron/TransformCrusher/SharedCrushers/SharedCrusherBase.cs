@@ -217,7 +217,7 @@ namespace emotitron.Compression
 						type = mb.DeclaringType;
 
 						//if (memberType != MemberTypes.Constructor)
-						if (type == typeof(SharedElementCrusher) || type == typeof(SharedFloatCrusher) || type == typeof(SharedTransformCrusher))
+						if (type == typeof(SharedElementCrusher) || type == typeof(SharedFloatCrusher) || type == typeof(SharedTransformCrusher) || type == typeof(SharedRigidbodyCrusher))
 						{
 							UnityEngine.Debug.Log(type.FullName + " " + (type.FullName.GetHashCode() + sf.GetILOffset()));
 							UnityEngine.Debug.LogError(
@@ -397,7 +397,6 @@ namespace emotitron.Compression
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-
 
 			crusher = property.FindPropertyRelative("_crusher");
 			hash = property.FindPropertyRelative("hashcode");

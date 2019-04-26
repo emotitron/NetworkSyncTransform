@@ -16,6 +16,7 @@ namespace emotitron.Compression
 		private const float TITL_HGHT = 18f;
 		private const float SET_PAD = 0;
 		public const float BOUNDING_PADDING = 4f;
+		protected float currentline;
 
 		//bool haschanged;
 		private static GUIContent gc = new GUIContent();
@@ -35,7 +36,7 @@ namespace emotitron.Compression
 			// Hacky way to get the real object
 			TransformCrusher target = (TransformCrusher)DrawerUtils.GetParent(property.FindPropertyRelative("posCrusher"));
 
-			float currentline = r.yMin;
+			currentline = r.yMin;
 
 			SerializedProperty pos = property.FindPropertyRelative("posCrusher");
 			SerializedProperty rot = property.FindPropertyRelative("rotCrusher");

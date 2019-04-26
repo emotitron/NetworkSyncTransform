@@ -7,7 +7,7 @@ namespace emotitron.Utilities
 {
 	public static class BoundsTools
 	{
-		public enum BoundsType { Both, MeshRenderer, Collider }
+		public enum BoundsType { Both, MeshRenderer, Collider, Manual }
 
 		// 3d
 		private static readonly List<MeshFilter> meshFilters = new List<MeshFilter>();

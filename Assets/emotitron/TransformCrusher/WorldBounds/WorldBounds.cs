@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using emotitron.Utilities;
 using emotitron.Debugging;
+using emotitron.Utilities.GUIUtilities;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -23,21 +24,46 @@ namespace emotitron.Compression
 	public class WorldBounds : MonoBehaviour
 	{
 
+		[SerializeField]
+		private Bounds manualBounds = new Bounds(new Vector3(0,0,0), new Vector3(600, 40, 600));
+		public Bounds ManualBounds
+		{
+			get { return manualBounds; }
+			set
+			{
+				manualBounds = value;
+				CollectMyBounds();
+			}
+		}
+
 		[Tooltip("Selects which WorldBounds group this object should be factored into.")]
 		[WorldBoundsSelectAttribute]
 		[HideInInspector]
+		[SerializeField]
 		public int worldBoundsGrp;
 
-		//public enum BoundsTools { Both, MeshRenderer, Collider }
-		public bool includeChildren = true;
+		[HideInInspector]
+		[SerializeField]
+		private bool includeChildren = true;
 
-		[Tooltip("Awake/Destroy will consider a map element into the world size as long as it exists in the scene (You may need to wake it though). Enable/Disable only factors it in if it is active.")]
-		//[HideInInspector]
-		public BoundsTools.BoundsType factorIn = BoundsTools.BoundsType.Both;
-
+		[Tooltip("Awake/Destroy will considerp element into the world size as long as it exists in the scene (You may need to wake it though). Enable/Disable only factors it in if it is active.")]
+		[HideInInspector]
+		[SerializeField]
+		private BoundsTools.BoundsType factorIn = BoundsTools.BoundsType.Both;
+		public BoundsTools.BoundsType FactorIn
+		{
+			get { return factorIn; }
+			set
+			{
+				factorIn = value;
+				CollectMyBounds();
+			}
+		}
 		// sum of all bounds (children included)
 		[HideInInspector] public Bounds myBounds;
 		[HideInInspector] public int myBoundsCount;
+
+
 
 		public System.Action OnWorldBoundsChange;
 
@@ -62,8 +88,16 @@ namespace emotitron.Compression
 				worldBoundsGrp = 0;
 
 			var grp = wbso.worldBoundsGroups[worldBoundsGrp];
-			
-			myBounds = BoundsTools.CollectMyBounds(gameObject, factorIn, out myBoundsCount, includeChildren, false);
+
+			if (factorIn == BoundsTools.BoundsType.Manual)
+			{
+				myBounds = manualBounds;
+				myBoundsCount = 1;
+			}
+			else
+			{
+				myBounds = BoundsTools.CollectMyBounds(gameObject, factorIn, out myBoundsCount, includeChildren, false);
+			}
 
 			// Remove this from all Groups then readd to the one it currently belongs to.
 			WorldBoundsSO.RemoveWorldBoundsFromAll(this);
@@ -173,21 +207,44 @@ namespace emotitron.Compression
 
 		public override void OnInspectorGUI()
 		{
-			base.OnInspectorGUI();
+			//base.OnInspectorGUI();
 
 			var _target = target as WorldBounds;
 
-			//var _target = (WorldBounds)target;
-			//var factorin = (BoundsTools.BoundsType)EditorGUILayout.EnumPopup("Factor In", _target.factorIn);
-			//if (_target.factorIn != factorin)
-			//{
-			//	Undo.RecordObject(_target, "Change bounds Factor In");
-			//	_target.factorIn = factorin;
-			//	EditorUtility.SetDirty(target);
-			//	serializedObject.Update();
-			//}
+			EditorGUILayout.Space();
+			//var mb = serializedObject.FindProperty("manualBounds");
+			//EditorGUILayout.PropertyField(mb);
+
+			var factorin = (BoundsTools.BoundsType)EditorGUILayout.EnumPopup("Factor In", _target.FactorIn);
+			if (_target.FactorIn != factorin)
+			{
+				Undo.RecordObject(_target, "Change bounds Factor In");
+				_target.FactorIn = factorin;
+				_target.CollectMyBounds();
+				EditorUtility.SetDirty(target);
+				serializedObject.Update();
+			}
+			if (_target.FactorIn == BoundsTools.BoundsType.Manual)
+			{
+				EditorGUI.BeginChangeCheck();
+				var manualBounds = serializedObject.FindProperty("manualBounds");
+				EditorGUILayout.PropertyField(manualBounds);
+				if (EditorGUI.EndChangeCheck())
+					_target.CollectMyBounds();
+			}
+			else
+			{
+				EditorGUI.BeginChangeCheck();
+				var includeChildren = serializedObject.FindProperty("includeChildren");
+				EditorGUILayout.PropertyField(includeChildren);
+				if (EditorGUI.EndChangeCheck())
+					_target.CollectMyBounds();
+			}
+
+			EditorGUILayout.Space();
 
 			var wrlBndsGrp = serializedObject.FindProperty("worldBoundsGrp");
+
 			int holdval = wrlBndsGrp.intValue;
 			EditorGUILayout.PropertyField(wrlBndsGrp);
 			serializedObject.ApplyModifiedProperties();
@@ -211,7 +268,7 @@ namespace emotitron.Compression
 			//_target.CollectMyBounds();
 			WorldBoundsSO.Single.DrawGui(target, true, false, false);
 
-			
+
 		}
 
 	}

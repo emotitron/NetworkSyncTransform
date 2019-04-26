@@ -52,10 +52,10 @@ namespace emotitron.Utilities.Example
 		private void Awake()
 		{
 #if PUN_2_OR_NEWER
-			pv = GetComponent<Photon.Pun.PhotonView>();
+			pv = transform.root.GetComponent<Photon.Pun.PhotonView>();
 #else
-			ni = GetComponent<NetworkIdentity>();
-			unetNI = GetComponent<UnityEngine.Networking.NetworkIdentity>();
+			ni = transform.root.GetComponent<NetworkIdentity>();
+			unetNI = transform.root.GetComponent<UnityEngine.Networking.NetworkIdentity>();
 #endif
 			var itc = transform.root.GetComponent<IHasTransformCrusher>();
 
@@ -73,7 +73,7 @@ namespace emotitron.Utilities.Example
 		void Update()
 		{
 #if PUN_2_OR_NEWER
-			if (!pv.IsMine)
+			if (pv && !pv.IsMine)
 				return;
 #else
 			if (ni && !ni.hasAuthority)
