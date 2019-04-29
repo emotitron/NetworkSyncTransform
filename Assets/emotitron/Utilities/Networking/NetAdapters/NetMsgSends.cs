@@ -11,8 +11,8 @@ using Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
-//#elif MIRROR
-//using Mirror;
+#elif MIRROR
+using Mirror;
 #else
 using UnityEngine.Networking;
 #endif
@@ -32,6 +32,9 @@ namespace emotitron.Utilities.Networking
 		public static byte[] reusableByteArray = new byte[512];
 
 #if PUN_2_OR_NEWER
+
+		public static bool ReadyToSend { get { return PhotonNetwork.NetworkClientState == ClientState.Joined; } }
+		public static bool AmActiveServer { get { return false; } }
 
 		private static RaiseEventOptions[] opts = new RaiseEventOptions[3]
 		{
@@ -73,7 +76,8 @@ namespace emotitron.Utilities.Networking
 		}
 #else
 
-
+		public static bool ReadyToSend { get { return NetworkServer.active || ClientScene.readyConnection != null; } }
+		public static bool AmActiveServer { get { return NetworkServer.active; } }
 
 		//static readonly NetworkWriter reusableunetwriter = new NetworkWriter();
 		public static readonly BytesMessageNonalloc bytesmsg = new BytesMessageNonalloc();
@@ -121,17 +125,22 @@ namespace emotitron.Utilities.Networking
 			}
 			else if (rcvGrp == ReceiveGroup.Master)
 			{
-				if (NetworkClient.active)
+				if (ClientScene.readyConnection != null)
+#if MIRROR
+					NetworkClient.Send(msgId, msg);
+#else
 					NetworkManager.singleton.client.Send(msgId, msg);
+#endif
 			}
 			else
 			{
 				if (NetworkServer.active)
-//#if MIRROR
-//					foreach (NetworkConnection nc in NetworkServer.connections.Values)
-//#else
+				{
+#if MIRROR
+					foreach (NetworkConnection nc in NetworkServer.connections.Values)
+#else
 					foreach (NetworkConnection nc in NetworkServer.connections)
-//#endif
+#endif
 					{
 						if (nc == null)
 							continue;
@@ -143,6 +152,17 @@ namespace emotitron.Utilities.Networking
 						if (nc.isReady)
 							nc.Send(msgId, msg);
 					}
+				}
+
+				/// Client's cant send to all, so we will just send to server to make 'others' always work.
+				else if (ClientScene.readyConnection != null)
+				{
+#if MIRROR
+					NetworkClient.Send(msgId, msg);
+#else
+					NetworkManager.singleton.client.Send(msgId, msg);
+#endif
+				}
 			}
 
 			//nc.FlushChannels();

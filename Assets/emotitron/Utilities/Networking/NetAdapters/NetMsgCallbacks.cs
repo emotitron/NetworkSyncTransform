@@ -10,11 +10,11 @@ using Photon.Pun;
 using ExitGames.Client.Photon;
 #endif
 
-//#if MIRROR
-//using Mirror;
-//#else
+#if MIRROR
+using Mirror;
+#else
 using UnityEngine.Networking;
-//#endif
+#endif
 
 #pragma warning disable CS0618 // UNET obsolete
 
@@ -24,12 +24,14 @@ using UnityEngine.Networking;
 /// </summary>
 namespace emotitron.Utilities.Networking
 {
+
+#if !PUN2_OR_NEWER
 	/// <summary>
-	///  Nonalloc message for Mirror, since we can't directly send writers with Mirror.
+	///  Nonalloc message for Mirror, since we can't directly send writers with Mirror. Set the buffer and length values prior to sending/rcving.
 	/// </summary>
 	public class BytesMessageNonalloc : MessageBase
 	{
-		public byte[] buffer;
+		public byte[] buffer = NetMsgSends.reusableByteArray;
 		public ushort length;
 
 		public BytesMessageNonalloc() { }
@@ -59,21 +61,21 @@ namespace emotitron.Utilities.Networking
 				buffer[i] = reader.ReadByte();
 		}
 	}
+#endif
 
 	public static class NetMsgCallbacks
 	{
+		private static readonly byte[] reusablebuffer = new byte[4096];
+
 		public delegate void ByteBufferCallback(byte[] buffer);
-		//public delegate void BitstreamCallback(ref Bitstream bitstream);
 
 		private static Dictionary<int, CallbackLists> callbacks = new Dictionary<int, CallbackLists>();
 
 		private class CallbackLists
 		{
 			public List<ByteBufferCallback> bufferCallbacks;
-			//public List<BitstreamCallback> bitstreamCallbacks;
 		}
 
-		//private static Bitstream reusableBitstream = new Bitstream();
 
 #if PUN_2_OR_NEWER
 
@@ -96,7 +98,7 @@ namespace emotitron.Utilities.Networking
 			// ignore messages from self.
 			if (PhotonNetwork.IsMasterClient && PhotonNetwork.MasterClient.ActorNumber == photonEvent.Sender)
 			{
-				XDebug.Log("Master Client talking to self? Normal occurance for a few seconds after Master leaves the game and a new master is selected.");
+				Debug.Log("Master Client talking to self? Normal occurance for a few seconds after Master leaves the game and a new master is selected.");
 				return;
 			}
 
@@ -113,6 +115,7 @@ namespace emotitron.Utilities.Networking
 
 		#region Handler Registration
 
+		[System.Obsolete("Removed the asServer from UNET side, killing it here as well.")]
 		public static void RegisterHandler(byte msgid, ByteBufferCallback callback, bool asServer)
 		{
 			if (!callbacks.ContainsKey(msgid))
@@ -126,20 +129,22 @@ namespace emotitron.Utilities.Networking
 			if (!cbs.Contains(callback))
 				cbs.Add(callback);
 		}
-		//public static void RegisterHandler(byte msgid, BitstreamCallback callback, bool asServer)
-		//{
-		//	if (!callbacks.ContainsKey(msgid))
-		//		callbacks.Add(msgid, new CallbackLists());
 
-		//	if (callbacks[msgid].bitstreamCallbacks == null)
-		//		callbacks[msgid].bitstreamCallbacks = new List<BitstreamCallback>();
+		public static void RegisterHandler(byte msgid, ByteBufferCallback callback)
+		{
+			if (!callbacks.ContainsKey(msgid))
+				callbacks.Add(msgid, new CallbackLists());
 
-		//	var cbs = callbacks[msgid].bitstreamCallbacks;
+			if (callbacks[msgid].bufferCallbacks == null)
+				callbacks[msgid].bufferCallbacks = new List<ByteBufferCallback>();
 
-		//	if (!cbs.Contains(callback))
-		//		cbs.Add(callback);
-		//}
+			var cbs = callbacks[msgid].bufferCallbacks;
 
+			if (!cbs.Contains(callback))
+				cbs.Add(callback);
+		}
+
+		[System.Obsolete("Removed the asServer from UNET side, killing it here as well.")]
 		public static void UnregisterHandler(byte msgid, ByteBufferCallback callback, bool asServer)
 		{
 			if (callbacks.ContainsKey(msgid))
@@ -152,34 +157,76 @@ namespace emotitron.Utilities.Networking
 			}
 		}
 
+		public static void UnregisterHandler(byte msgid, ByteBufferCallback callback)
+		{
+			if (callbacks.ContainsKey(msgid))
+			{
+				var cbs = callbacks[msgid];
+				cbs.bufferCallbacks.Remove(callback);
+
+				if (cbs.bufferCallbacks.Count == 0)
+					callbacks.Remove(msgid);
+			}
+		}
+
 		#endregion
 
 #else
 
 
-		private static readonly byte[] reusablebuffer = new byte[1024];
+		private static bool RegisterMessageId(short msgId)
+		{
+			/// Make sure network is active, or registering handlers will fail, or they will just be forgotten
+			if (NetworkServer.active)
+			{
+				NetworkServer.RegisterHandler(msgId, OnMessage);
+#if MIRROR
+				NetworkClient.UnregisterHandler(msgId);
+#else
+				if (!ReferenceEquals(NetworkManager.singleton.client, null))
+					NetworkManager.singleton.client.UnregisterHandler(msgId);
+#endif
+			}
+			else if (NetworkClient.active)
+			{
+#if MIRROR
+				NetworkClient.RegisterHandler(msgId, OnMessage);
+#else
+				NetworkManager.singleton.client.RegisterHandler(msgId, OnMessage);
+#endif
+				NetworkServer.UnregisterHandler(msgId);
+			}
+			else
+				return false;
 
+			if (!callbacks.ContainsKey(msgId))
+				callbacks.Add(msgId, new CallbackLists());
+
+			return true;
+		}
+
+		[System.Obsolete("Moving to make the asServer handling not needed, to make send more generic.")]
 		private static bool RegisterMessageId(short msgId, bool asServer)
 		{
 			/// Make sure network is active, or registering handlers will fail, or they will just be forgotten
 			if (asServer)
 			{
 				if (NetworkServer.active)
-					if (!NetworkServer.handlers.ContainsKey(msgId))
-						NetworkServer.RegisterHandler(msgId, OnMessage);
-
-					else
-						return false;
-
+					NetworkServer.RegisterHandler(msgId, OnMessage);
+				else
+					return false;
 			}
 			else
 			{
 				if (NetworkClient.active)
-					if (!NetworkManager.singleton.client.handlers.ContainsKey(msgId))
-						NetworkManager.singleton.client.RegisterHandler(msgId, OnMessage);
+#if MIRROR
+					NetworkClient.RegisterHandler(msgId, OnMessage);
+#else
+					NetworkManager.singleton.client.RegisterHandler(msgId, OnMessage);
+#endif
 
-					else
-						return false;
+				else
+					return false;
 			}
 
 			if (!callbacks.ContainsKey(msgId))
@@ -188,6 +235,26 @@ namespace emotitron.Utilities.Networking
 			return true;
 		}
 
+		public static void RegisterHandler(short msgId, ByteBufferCallback callback)
+		{
+			if (callback == null)
+				return;
+
+			if (!RegisterMessageId(msgId))
+				return;
+
+			/// make a new list if this is the first item
+			if (callbacks[msgId].bufferCallbacks == null)
+				callbacks[msgId].bufferCallbacks = new List<ByteBufferCallback>();
+
+			/// don't register the same callback twice
+			if (callbacks[msgId].bufferCallbacks.Contains(callback))
+				return;
+
+			callbacks[msgId].bufferCallbacks.Add(callback);
+		}
+
+		[System.Obsolete("Moving to make the asServer handling not needed, to make send more generic.")]
 		public static void RegisterHandler(short msgId, ByteBufferCallback callback, bool asServer)
 		{
 			if (callback == null)
@@ -207,34 +274,53 @@ namespace emotitron.Utilities.Networking
 			callbacks[msgId].bufferCallbacks.Add(callback);
 		}
 
-		//public static void RegisterHandler(short msgId, BitstreamCallback callback, bool asServer)
-		//{
-		//	if (callback == null)
-		//		return;
-
-		//	if (!RegisterMessageId(msgId, asServer))
-		//		return;
-
-		//	/// make a new list if this is the first item
-		//	if (callbacks[msgId].bitstreamCallbacks == null)
-		//		callbacks[msgId].bitstreamCallbacks = new List<BitstreamCallback>();
-
-		//	/// don't register the same callback twice
-		//	if (callbacks[msgId].bitstreamCallbacks.Contains(callback))
-		//		return;
-
-		//	callbacks[msgId].bitstreamCallbacks.Add(callback);
-		//}
-
+		[System.Obsolete("Moving to make the asServer handling not needed, to make send more generic.")]
 		private static void UnregisterMessageId(int msgId, bool asServer)
 		{
 			if (asServer)
 				NetworkServer.UnregisterHandler((short)msgId);
 			else
+#if MIRROR
+				NetworkClient.UnregisterHandler((short)msgId);
+#else
 				if (NetworkManager.singleton.client != null)
 				NetworkManager.singleton.client.UnregisterHandler((short)msgId);
+#endif
 		}
 
+		private static void UnregisterMessageId(int msgId)
+		{
+			if (NetworkServer.active)
+				NetworkServer.UnregisterHandler((short)msgId);
+			if (NetworkClient.active)
+#if MIRROR
+				NetworkClient.UnregisterHandler((short)msgId);
+#else
+				if (NetworkManager.singleton.client != null)
+					NetworkManager.singleton.client.UnregisterHandler((short)msgId);
+#endif
+		}
+
+
+		public static void UnregisterHandler(short msgId, ByteBufferCallback callback)
+		{
+			if (!callbacks.ContainsKey(msgId) || callbacks[msgId].bufferCallbacks == null)
+				return;
+
+			var cbs = callbacks[msgId];
+
+			// Remove callback method from list for this msgid
+			cbs.bufferCallbacks.Remove(callback);
+
+			/// Remove the dictionary entry entirely if we no longer have any callbacks
+			if (cbs.bufferCallbacks.Count == 0)
+			{
+				UnregisterMessageId(msgId);
+				callbacks.Remove(msgId);
+			}
+		}
+
+		[System.Obsolete("Moving to make the asServer handling not needed, to make send more generic.")]
 		public static void UnregisterHandler(short msgId, ByteBufferCallback callback, bool asServer)
 		{
 			if (!callbacks.ContainsKey(msgId) || callbacks[msgId].bufferCallbacks == null)
@@ -252,24 +338,6 @@ namespace emotitron.Utilities.Networking
 				callbacks.Remove(msgId);
 			}
 		}
-		//public static void UnregisterHandler(short msgId, BitstreamCallback callback, bool asServer)
-		//{
-		//	if (!callbacks.ContainsKey(msgId) || callbacks[msgId].bitstreamCallbacks == null)
-		//		return;
-
-		//	var cbs = callbacks[msgId];
-
-		//	// Remove callback method from list for this msgid
-		//	cbs.bitstreamCallbacks.Remove(callback);
-
-		//	/// Remove the dictionary entry entirely if we no longer have any callbacks
-		//	if (cbs.bitstreamCallbacks.Count == 0 && (cbs.bufferCallbacks == null || cbs.bufferCallbacks.Count == 0))
-		//	{
-		//		Debug.Log("Unregister " + cbs.bitstreamCallbacks.Count);
-		//		UnregisterMessageId(msgId, asServer);
-		//		callbacks.Remove(msgId);
-		//	}
-		//}
 
 		/// <summary>
 		/// All of our registered UNET msgId msgs get routed this method, which reads them into a byte[] form before passing them to the callbacks
@@ -277,7 +345,6 @@ namespace emotitron.Utilities.Networking
 		/// <param name="msg"></param>
 		public static void OnMessage(NetworkMessage msg)
 		{
-
 			var bmsg = NetMsgSends.bytesmsg;
 			bmsg.buffer = reusablebuffer;
 
@@ -300,23 +367,6 @@ namespace emotitron.Utilities.Networking
 				for (int i = 0; i < cnt; ++i)
 					bufferCBList[i](reusablebuffer);
 			}
-
-
-			///// Send to all Bitstream callbacks
-			//var bitstreamCBList = cbs.bitstreamCallbacks;
-
-			//if (bitstreamCBList != null)
-			//{
-			//	/// copy buffer into bitstream
-			//	reusableBitstream.Reset();
-			//	//for (int i = 0; i < bmsg.length; ++i)
-			//	//	reusableBitstream.WriteByte(reusablebuffer[i]);
-			//	reusableBitstream.WriteFromByteBuffer(bmsg.buffer, bmsg.length * 8);
-
-			//	for (int i = 0; i < bitstreamCBList.Count; ++i)
-			//		bitstreamCBList[i](ref reusableBitstream);
-			//}
-
 		}
 #endif
 

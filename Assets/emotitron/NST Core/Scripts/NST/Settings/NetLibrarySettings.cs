@@ -28,7 +28,12 @@ namespace emotitron.NST
 		
 		[HideInInspector]
 		public bool dependenciesNeedToBeCheckedEverywhere = false;
-			
+
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+		static void Bootstrap()
+		{
+			var single = Single;
+		}
 
 #if UNITY_EDITOR
 

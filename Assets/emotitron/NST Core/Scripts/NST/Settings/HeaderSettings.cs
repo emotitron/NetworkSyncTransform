@@ -73,6 +73,12 @@ namespace emotitron.NST
 		public override string SettingsName { get { return "Headers Settings"; } }
 #endif
 
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+		static void Bootstrap()
+		{
+			var single = Single;
+		}
+
 		public override void Initialize()
 		{
 			single = this;

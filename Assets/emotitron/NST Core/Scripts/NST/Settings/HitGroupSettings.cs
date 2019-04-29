@@ -29,6 +29,13 @@ namespace emotitron.NST
 #if UNITY_EDITOR
 		public override string SettingsName { get { return "Hit Group Settings"; } }
 #endif
+
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+		static void Bootstrap()
+		{
+			var single = Single;
+		}
+
 		public override void Initialize()
 		{
 			single = this;

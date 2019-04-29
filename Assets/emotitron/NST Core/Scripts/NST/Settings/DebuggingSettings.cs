@@ -52,6 +52,12 @@ namespace emotitron.NST
 			Initialize();
 		}
 
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+		static void Bootstrap()
+		{
+			var single = Single;
+		}
+
 		public override void Initialize()
 		{
 			single = this;
