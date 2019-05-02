@@ -10,6 +10,7 @@ namespace emotitron.Utilities.SmartVars
 		None, Int, Uint, Bool, Float, Byte, Short, UShort, String
 	}
 
+	[System.Serializable]
 	[StructLayout(LayoutKind.Explicit)]
 	public struct SmartVar
 	{
@@ -37,9 +38,6 @@ namespace emotitron.Utilities.SmartVars
 
 		[FieldOffset(4)]
 		public UInt16 UShort;
-
-		[FieldOffset(8)]
-		public String Str;
 
 		public readonly static SmartVar None = new SmartVar() { TypeCode = SmartVarTypeCode.None };
 
@@ -78,12 +76,6 @@ namespace emotitron.Utilities.SmartVars
 			return new SmartVar { UShort = v, TypeCode = SmartVarTypeCode.UShort };
 		}
 
-		public static implicit operator SmartVar(String v)
-		{
-			return new SmartVar { Str = v, TypeCode = SmartVarTypeCode.String };
-		}
-
-
 		public static implicit operator Int32(SmartVar v)
 		{
 			if (v.TypeCode == SmartVarTypeCode.Int)
@@ -109,6 +101,10 @@ namespace emotitron.Utilities.SmartVars
 			if (v.TypeCode == SmartVarTypeCode.Float)
 			{
 				return v.Float;
+			}
+			else
+			{
+				UnityEngine.Debug.LogError("cant cast " + v.TypeCode + " to single float");
 			}
 
 			throw new InvalidCastException();
@@ -154,15 +150,6 @@ namespace emotitron.Utilities.SmartVars
 			throw new InvalidCastException();
 		}
 
-		public static implicit operator String(SmartVar v)
-		{
-			if (v.TypeCode == SmartVarTypeCode.String)
-			{
-				return v.Str;
-			}
-
-			throw new InvalidCastException();
-		}
 
 		public SmartVar Copy()
 		{
@@ -188,9 +175,7 @@ namespace emotitron.Utilities.SmartVars
 				return str + this.UShort;
 			else if (TypeCode == SmartVarTypeCode.Byte)
 				return str + this.Byte8;
-			else if (TypeCode == SmartVarTypeCode.String)
-				return str + this.Str;
-
+			
 			return str;
 		}
 	}
