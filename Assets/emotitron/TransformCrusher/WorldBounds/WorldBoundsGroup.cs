@@ -66,7 +66,7 @@ namespace emotitron.Compression
 			if (activeWorldBounds.Count == 0)
 			{
 				_combinedWorldBounds = new Bounds();
-				
+
 				// When we have no bounds for a group, default to uncompressed to ensure "always works"
 				//xc.BitsDeterminedBy = BitsDeterminedBy.Uncompressed;
 				//yc.BitsDeterminedBy = BitsDeterminedBy.Uncompressed;
@@ -76,7 +76,7 @@ namespace emotitron.Compression
 			{
 
 				/// When we have bounds for a group, switch back to Resolution mode if we are in a mode hostile to trying to set things
-				if (xc.BitsDeterminedBy > 0 || 
+				if (xc.BitsDeterminedBy > 0 ||
 					xc.BitsDeterminedBy == BitsDeterminedBy.SetBits || xc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || xc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat)
 				{
 					xc.Resolution = 100;
@@ -88,7 +88,7 @@ namespace emotitron.Compression
 					yc.Resolution = 100;
 					yc.BitsDeterminedBy = BitsDeterminedBy.Resolution;
 				}
-				if (zc.BitsDeterminedBy > 0 || 
+				if (zc.BitsDeterminedBy > 0 ||
 					zc.BitsDeterminedBy == BitsDeterminedBy.SetBits || zc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || zc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat)
 				{
 					zc.Resolution = 100;
@@ -136,18 +136,18 @@ namespace emotitron.Compression
 			strb.Append("Encapsulates [").Append(ActiveBoundsObjCount).Append("] ").Append(typeof(WorldBounds).Name)
 				.Append("\nCombined Center: ").Append(_combinedWorldBounds.center)
 				.Append("\nCombined Size: ").Append(_combinedWorldBounds.size);
-				//.Append("\nBits: ").Append(crusher.TallyBits())
-				//.Append(" (").Append(crusher.XCrusher.GetBits())
-				//.Append(", ").Append(crusher.YCrusher.GetBits())
-				//.Append(", ").Append(crusher.ZCrusher.GetBits())
-				//.Append(")\nActual Res: ")
-				//.Append(crusher.XCrusher.GetResAtBits()).Append(", ")
-				//.Append(crusher.YCrusher.GetResAtBits()).Append(", ")
-				//.Append(crusher.ZCrusher.GetResAtBits())
-				//.Append("\nActual Prec: ")
-				//.Append(crusher.XCrusher.GetPrecAtBits().ToString("N5")).Append(", ")
-				//.Append(crusher.YCrusher.GetPrecAtBits().ToString("N5")).Append(", ")
-				//.Append(crusher.ZCrusher.GetPrecAtBits().ToString("N5"));
+			//.Append("\nBits: ").Append(crusher.TallyBits())
+			//.Append(" (").Append(crusher.XCrusher.GetBits())
+			//.Append(", ").Append(crusher.YCrusher.GetBits())
+			//.Append(", ").Append(crusher.ZCrusher.GetBits())
+			//.Append(")\nActual Res: ")
+			//.Append(crusher.XCrusher.GetResAtBits()).Append(", ")
+			//.Append(crusher.YCrusher.GetResAtBits()).Append(", ")
+			//.Append(crusher.ZCrusher.GetResAtBits())
+			//.Append("\nActual Prec: ")
+			//.Append(crusher.XCrusher.GetPrecAtBits().ToString("N5")).Append(", ")
+			//.Append(crusher.YCrusher.GetPrecAtBits().ToString("N5")).Append(", ")
+			//.Append(crusher.ZCrusher.GetPrecAtBits().ToString("N5"));
 
 			return strb.ToString();
 		}
@@ -174,7 +174,7 @@ namespace emotitron.Compression
 			//r.xMax -= 18;
 
 			var name = property.FindPropertyRelative("name");
-			
+
 			EditorGUI.BeginDisabledGroup(name.stringValue == WorldBoundsGroup.defaultName);
 			string n = EditorGUI.DelayedTextField(r, /*gngc,*/ name.stringValue);
 			EditorGUI.EndDisabledGroup();
@@ -192,7 +192,7 @@ namespace emotitron.Compression
 
 			r.y += 18;
 			r.xMax += 18;
-			
+
 			if (haschanged)
 			{
 				EditorUtility.SetDirty(property.serializedObject.targetObject);
