@@ -778,6 +778,7 @@ namespace emotitron.NST
 	/// </summary>
 	public class BytesMessageNonalloc : MessageBase
 	{
+		public static byte[] incomingbuffer = new byte[2048];
 		public byte[] buffer;
 		public ushort length;
 
@@ -787,12 +788,12 @@ namespace emotitron.NST
 		}
 		public BytesMessageNonalloc(byte[] nonalloc)
 		{
-			this.buffer = nonalloc;
+			buffer = nonalloc;
 		}
 
 		public BytesMessageNonalloc(byte[] nonalloc, ushort length)
 		{
-			this.buffer = nonalloc;
+			buffer = nonalloc;
 			this.length = length;
 		}
 
@@ -807,7 +808,7 @@ namespace emotitron.NST
 		{
 			length = reader.ReadUInt16();
 			for (int i = 0; i < length; i++)
-				buffer[i] = reader.ReadByte();
+				incomingbuffer[i] = reader.ReadByte();
 		}
 
 	}
@@ -1039,10 +1040,17 @@ namespace emotitron.NST
 					cb.OnNetworkDestroy();
 
 			//isRegistered = false;
+#if MIRROR_3_0_OR_NEWER
+
+			//if (NetworkServer.handlers.ContainsKey(masterMsgTypeId) && NetworkServer.handlers[masterMsgTypeId] == ReceiveUpdate)
+				NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
+#else
 			if (NetworkServer.handlers.ContainsKey(masterMsgTypeId) && NetworkServer.handlers[masterMsgTypeId] == ReceiveUpdate)
 				NetworkServer.UnregisterHandler(HeaderSettings.Single.masterMsgTypeId);
+#endif
+
 #if MIRROR_3_0_OR_NEWER
-			NetworkClient.UnregisterHandler(masterMsgTypeId);
+			NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
 #else
 			if (NetworkManager.singleton && NetworkManager.singleton.client != null)
 				NetworkManager.singleton.client.UnregisterHandler(masterMsgTypeId);
@@ -1063,20 +1071,26 @@ namespace emotitron.NST
 			//if (IsRegistered)
 			//	return;
 
+#if !MIRROR_3_0_OR_NEWER
 			masterMsgTypeId = HeaderSettings.Single.masterMsgTypeId;
+#endif
 
 			if (NetworkServer.active)
 			{
-				///// Unregister just in case of edge cases where Unregister never gets called
-				//NetworkServer.UnregisterHandler(masterMsgTypeId);
+
+#if MIRROR_3_0_OR_NEWER
+				if (!NetworkServer.handlers.ContainsKey(masterMsgTypeId))
+					NetworkServer.RegisterHandler<BytesMessageNonalloc>(ReceiveUpdate);
+#else
 				if (!NetworkServer.handlers.ContainsKey(masterMsgTypeId))
 					NetworkServer.RegisterHandler(masterMsgTypeId, ReceiveUpdate);
+#endif
 
 				/// Mirror (at least Telepathy) needs a dummy handler for Host talking to itself
 #if MIRROR_3_0_OR_NEWER
 				if (NetworkClient.active)
 					if (!NetworkClient.handlers.ContainsKey(masterMsgTypeId))
-						NetworkClient.RegisterHandler(masterMsgTypeId, ReceiveDummy);
+						NetworkClient.RegisterHandler<BytesMessageNonalloc>(ReceiveDummy);
 #elif MIRROR
 				if (NetworkClient.active)
 					if (!NetworkManager.singleton.client.handlers.ContainsKey(masterMsgTypeId))
@@ -1091,11 +1105,10 @@ namespace emotitron.NST
 				//NetworkManager.singleton.client.UnregisterHandler(masterMsgTypeId);
 #if MIRROR_3_0_OR_NEWER
 				if (!NetworkClient.handlers.ContainsKey(masterMsgTypeId))
-					NetworkClient.RegisterHandler(masterMsgTypeId, ReceiveUpdate);
+					NetworkClient.RegisterHandler<BytesMessageNonalloc>(ReceiveUpdate);
 #else
 				if (!NetworkManager.singleton.client.handlers.ContainsKey(masterMsgTypeId))
 					NetworkManager.singleton.client.RegisterHandler(masterMsgTypeId, ReceiveUpdate);
-
 #endif
 				//isRegistered = true;
 			}
@@ -1105,7 +1118,32 @@ namespace emotitron.NST
 		private static readonly BytesMessageNonalloc bytesmsg = new BytesMessageNonalloc() { buffer = NSTMaster.bitstreamByteArray };
 		private static readonly BytesMessageNonalloc outbytemsg = new BytesMessageNonalloc() { buffer = NSTMaster.outstreamByteArray };
 
-#if MIRROR
+#if MIRROR_3_0_OR_NEWER
+
+		public static void ReceiveDummy(NetworkConnection nc, BytesMessageNonalloc msg)
+		{
+
+		}
+
+		private static void ReceiveUpdate(NetworkConnection nc, BytesMessageNonalloc msg)
+		{
+
+			UdpBitStream bitstream = new UdpBitStream(BytesMessageNonalloc.incomingbuffer, bytesmsg.length);
+			UdpBitStream outstream = new UdpBitStream(NSTMaster.outstreamByteArray);
+
+			NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, NetworkServer.active, nc.connectionId);
+
+			outbytemsg.length = (ushort)outstream.BytesUsed;
+
+			// Write a clone message and pass it to all the clients if this is the server receiving
+			if (NetworkServer.active)
+			{
+				NetworkServer.SendToAll<BytesMessageNonalloc>(outbytemsg, Channels.DefaultUnreliable);
+			}
+		}
+
+#elif MIRROR
+
 		// Mirror SendToAll seems to send from Host server to its own client, and will flood the log with errors if no handler is set up.
 		public static void ReceiveDummy(NetworkMessage msg)
 		{
@@ -1122,7 +1160,7 @@ namespace emotitron.NST
 		{
 			bytesmsg.Deserialize(msg.reader);
 
-			UdpBitStream bitstream = new UdpBitStream(bytesmsg.buffer, bytesmsg.length);
+			UdpBitStream bitstream = new UdpBitStream(BytesMessageNonalloc.incomingbuffer, bytesmsg.length);
 			UdpBitStream outstream = new UdpBitStream(NSTMaster.outstreamByteArray);
 
 			NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, NetworkServer.active, msg.conn.connectionId);
@@ -1132,7 +1170,11 @@ namespace emotitron.NST
 			// Write a clone message and pass it to all the clients if this is the server receiving
 			if (NetworkServer.active)
 			{
-				NetworkServer.SendToAll(msg.msgType, outbytemsg);
+#if MIRROR
+				NetworkServer.SendToAll<BytesMessageNonalloc>(outbytemsg, Channels.DefaultUnreliable);
+#else
+				NetworkServer.SendByChannelToReady(null, msg.msgType, outbytemsg, Channels.DefaultUnreliable);
+#endif
 			}
 		}
 
@@ -1145,7 +1187,11 @@ namespace emotitron.NST
 			{
 
 				//writer.SendPayloadArrayToAllClients(masterMsgTypeId, Channels.DefaultUnreliable);
-				NetworkServer.SendToAll(masterMsgTypeId, bytesmsg);
+#if MIRROR
+				NetworkServer.SendToAll<BytesMessageNonalloc>(bytesmsg, Channels.DefaultUnreliable);
+#else
+				NetworkServer.SendByChannelToReady(null, masterMsgTypeId, bytesmsg, Channels.DefaultUnreliable);
+#endif
 
 				// If this is the server as client, run the ReceiveUpdate since local won't get this run.
 				//if (NetworkClient.active)
@@ -1156,18 +1202,18 @@ namespace emotitron.NST
 			else
 			{
 #if MIRROR_3_0_OR_NEWER
-				if (cachedNetworkClient != null && NetworkClient.isConnected)
+				if (ClientScene.readyConnection != null)
 				{
-					NetworkClient.Send(masterMsgTypeId, bytesmsg);
+					ClientScene.readyConnection.Send<BytesMessageNonalloc>(bytesmsg, Channels.DefaultUnreliable);
 				}
 #else
 				// TODO: find reliable way to cache this condition - Is here to eliminate some shut down warnings, and not critical
 				if (cachedNetworkClient != null && cachedNetworkClient.isConnected)
 				{
-					NetworkManager.singleton.client.Send(masterMsgTypeId, bytesmsg);
+					ClientScene.readyConnection.SendByChannel(masterMsgTypeId, bytesmsg, Channels.DefaultUnreliable);
+					//NetworkManager.singleton.client.SendByChannel(masterMsgTypeId, bytesmsg, Channels.DefaultUnreliable);
 				}
 #endif
-
 			}
 		}
 
