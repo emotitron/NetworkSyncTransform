@@ -7,7 +7,7 @@ namespace emotitron.Utilities.SmartVars
 {
 	public enum SmartVarTypeCode
 	{
-		None, Int, Uint, Bool, Float, Byte, Short, UShort, String
+		None, Int, Uint, Bool, Float, Byte, Short, UShort, Char
 	}
 
 	[System.Serializable]
@@ -38,6 +38,9 @@ namespace emotitron.Utilities.SmartVars
 
 		[FieldOffset(4)]
 		public UInt16 UShort;
+
+		[FieldOffset(4)]
+		public Char Char;
 
 		public readonly static SmartVar None = new SmartVar() { TypeCode = SmartVarTypeCode.None };
 
@@ -74,6 +77,11 @@ namespace emotitron.Utilities.SmartVars
 		public static implicit operator SmartVar(UInt16 v)
 		{
 			return new SmartVar { UShort = v, TypeCode = SmartVarTypeCode.UShort };
+		}
+
+		public static implicit operator SmartVar(Char v)
+		{
+			return new SmartVar { Char = v, TypeCode = SmartVarTypeCode.Char };
 		}
 
 		public static implicit operator Int32(SmartVar v)
@@ -150,6 +158,16 @@ namespace emotitron.Utilities.SmartVars
 			throw new InvalidCastException();
 		}
 
+		public static implicit operator Char(SmartVar v)
+		{
+			if (v.TypeCode == SmartVarTypeCode.Char)
+			{
+				return v.Char;
+			}
+
+			throw new InvalidCastException();
+		}
+
 
 		public SmartVar Copy()
 		{
@@ -175,7 +193,9 @@ namespace emotitron.Utilities.SmartVars
 				return str + this.UShort;
 			else if (TypeCode == SmartVarTypeCode.Byte)
 				return str + this.Byte8;
-			
+			else if (TypeCode == SmartVarTypeCode.Char)
+				return str + this.Char;
+
 			return str;
 		}
 	}
