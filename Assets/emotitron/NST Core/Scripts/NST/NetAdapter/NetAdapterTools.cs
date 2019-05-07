@@ -353,7 +353,7 @@ namespace emotitron.NST
 			if (_MA == "" || _NA == "" || MA == "" || NA == "")
 				return false;
 
-			XDebug.Log("Switching to " + libSuffix + " adapters... recompiling should happen automatically.", true, true);
+			XDebug.Log(!XDebug.logInfo ? null : ("Switching to " + libSuffix + " adapters... recompiling should happen automatically."), true, true);
 
 			if (MasterNetAdapter.NetworkLibrary != newLib)
 				success |= AssetDatabase.CopyAsset(_MA, MA);

@@ -142,7 +142,7 @@ namespace emotitron.Compression
 			if (bits <= 0)
 				return 0;
 
-			XDebug.LogError("Attemping to read past end of bitstream byte[] buffer.", (ptr + bits > Length));
+			XDebug.LogError(!XDebug.logErrors ? null : ("Attemping to read past end of bitstream byte[] buffer."), (ptr + bits > Length));
 
 			byte value;
 			int p = ptr >> 3;

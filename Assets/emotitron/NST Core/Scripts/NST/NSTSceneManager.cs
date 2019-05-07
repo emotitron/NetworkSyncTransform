@@ -26,12 +26,12 @@ namespace emotitron.NST
 			numOfScenesInBuild = SceneManager.sceneCountInBuildSettings;
 			bitsForSceneIndex = emotitron.Compression.FloatCrusher.GetBitsForMaxValue((uint)Mathf.Max(0, numOfScenesInBuild));
 			SceneManager.sceneLoaded += OnSceneLoaded;
-			XDebug.Log(numOfScenesInBuild + " total scenes in build, networking scene index will add " + bitsForSceneIndex + " to each update ");
+			XDebug.Log(!XDebug.logInfo ? null : (numOfScenesInBuild + " total scenes in build, networking scene index will add " + bitsForSceneIndex + " to each update "));
 		}
 
 		public static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 		{
-			XDebug.Log("<b>Loaded Scene </b>" + scene + " with mode " + mode);
+			XDebug.Log(!XDebug.logInfo ? null : ("<b>Loaded Scene </b>" + scene + " with mode " + mode));
 			PollCurrentSceneIndex();
 		}
 
@@ -46,7 +46,7 @@ namespace emotitron.NST
 			if (_currentSceneIndex == -1)
 				_currentSceneIndex = numOfScenesInBuild;
 
-			XDebug.Log("<b>New scene index</b> : " + _currentSceneIndex);
+			XDebug.Log(!XDebug.logInfo ? null : ("<b>New scene index</b> : " + _currentSceneIndex));
 			return _currentSceneIndex;
 		}
 

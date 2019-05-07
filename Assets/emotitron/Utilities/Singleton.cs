@@ -33,7 +33,7 @@ namespace emotitron
 
 			if (single != null && single != this)
 			{
-				XDebug.LogWarning("Enforcing " + typeof(T) + " singleton. Multiples found.");
+				XDebug.LogWarning(!XDebug.logWarnings ? null : ("Enforcing " + typeof(T) + " singleton. Multiples found."));
 				Destroy(gameObject);
 			}
 			else

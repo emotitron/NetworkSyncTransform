@@ -18,6 +18,7 @@ using Photon.Realtime;
 using Photon.Pun;
 using ExitGames.Client.Photon;
 using emotitron.Debugging;
+using emotitron.Utilities;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -342,7 +343,7 @@ namespace emotitron.NST
 			/// Attempt to add a photonview on the fly if missing. Likely to get cranky results.
 			PhotonView pv = prefab.GetComponent<PhotonView>();
 			if (!pv)
-				prefab.AddComponent<PhotonView>();
+				pv = ReplaceNetworkIdWithPhotonView(prefab);
 
 			GameObject go = PhotonNetwork.Instantiate(prefab.name, position, rotation, 0);
 			go.transform.parent = parent;
@@ -355,6 +356,26 @@ namespace emotitron.NST
 			{
 				PhotonNetwork.Destroy(obj);
 			}
+		}
+
+		public static PhotonView ReplaceNetworkIdWithPhotonView(GameObject prefab)
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			var unetNI = prefab.GetComponent<UnityEngine.Networking.NetworkIdentity>();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			var pv = prefab.GetComponent<PhotonView>();
+
+			if (!pv)
+			{
+				pv = prefab.AddComponentToPrefab<PhotonView>();
+			}
+
+			if (unetNI)
+			{
+				DestroyImmediate(unetNI, true);
+			}
+			return pv;
 		}
 
 	}
@@ -1071,8 +1092,10 @@ namespace emotitron.NST
 			//if (IsRegistered)
 			//	return;
 
-#if !MIRROR_3_0_OR_NEWER
 			masterMsgTypeId = HeaderSettings.Single.masterMsgTypeId;
+
+#if MIRROR
+
 #endif
 
 			if (NetworkServer.active)
@@ -1109,6 +1132,7 @@ namespace emotitron.NST
 #else
 				if (!NetworkManager.singleton.client.handlers.ContainsKey(masterMsgTypeId))
 					NetworkManager.singleton.client.RegisterHandler(masterMsgTypeId, ReceiveUpdate);
+
 #endif
 				//isRegistered = true;
 			}
@@ -1119,7 +1143,6 @@ namespace emotitron.NST
 		private static readonly BytesMessageNonalloc outbytemsg = new BytesMessageNonalloc() { buffer = NSTMaster.outstreamByteArray };
 
 #if MIRROR_3_0_OR_NEWER
-
 		public static void ReceiveDummy(NetworkConnection nc, BytesMessageNonalloc msg)
 		{
 
@@ -1142,8 +1165,8 @@ namespace emotitron.NST
 			}
 		}
 
-#elif MIRROR
 
+#elif MIRROR
 		// Mirror SendToAll seems to send from Host server to its own client, and will flood the log with errors if no handler is set up.
 		public static void ReceiveDummy(NetworkMessage msg)
 		{
@@ -1211,7 +1234,7 @@ namespace emotitron.NST
 				if (cachedNetworkClient != null && cachedNetworkClient.isConnected)
 				{
 					ClientScene.readyConnection.SendByChannel(masterMsgTypeId, bytesmsg, Channels.DefaultUnreliable);
-					//NetworkManager.singleton.client.SendByChannel(masterMsgTypeId, bytesmsg, Channels.DefaultUnreliable);
+					//NetworkManager.singleton.client.(masterMsgTypeId, bytesmsg, Channels.DefaultUnreliable);
 				}
 #endif
 			}

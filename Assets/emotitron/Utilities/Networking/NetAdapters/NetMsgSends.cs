@@ -121,15 +121,19 @@ namespace emotitron.Utilities.Networking
 			if (rcvGrp == ReceiveGroup.All)
 			{
 				if (NetworkServer.active)
-					NetworkServer.SendToAll(msgId, msg);
+#if MIRROR
+					NetworkServer.SendToAll<BytesMessageNonalloc>(msg, channel);
+#else
+					NetworkServer.SendByChannelToReady(null, msgId, msg, channel);
+#endif
 			}
 			else if (rcvGrp == ReceiveGroup.Master)
 			{
 				if (ClientScene.readyConnection != null)
 #if MIRROR
-					NetworkClient.Send(msgId, msg);
+					ClientScene.readyConnection.Send<BytesMessageNonalloc>(msg, channel);
 #else
-					NetworkManager.singleton.client.Send(msgId, msg);
+					ClientScene.readyConnection.SendByChannel(msgId, msg, channel);
 #endif
 			}
 			else
@@ -150,7 +154,11 @@ namespace emotitron.Utilities.Networking
 							continue;
 
 						if (nc.isReady)
-							nc.Send(msgId, msg);
+#if MIRROR
+							nc.Send<BytesMessageNonalloc>(msg, channel);
+#else
+							nc.SendByChannel(msgId, msg, channel);
+#endif
 					}
 				}
 
@@ -158,9 +166,9 @@ namespace emotitron.Utilities.Networking
 				else if (ClientScene.readyConnection != null)
 				{
 #if MIRROR
-					NetworkClient.Send(msgId, msg);
+					ClientScene.readyConnection.Send<BytesMessageNonalloc>(msg, channel);
 #else
-					NetworkManager.singleton.client.Send(msgId, msg);
+					ClientScene.readyConnection.SendByChannel(msgId, msg, channel);
 #endif
 				}
 			}

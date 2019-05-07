@@ -24,8 +24,8 @@ namespace emotitron.NST
 	{
 		public const int VersionMajor = 5;
 		public const int VersionMinor = 7;
-		public const int VersionRevision = 6;
-		public const int Build = 5706;
+		public const int VersionRevision = 8;
+		public const int Build = 5708;
 
 		// Interface requirements
 		public GameObject SrcGameObject { get { return gameObject; } }
@@ -310,7 +310,7 @@ namespace emotitron.NST
 				na = gameObject.AddComponent<NSTNetAdapter>();
 
 			if (na == null)
-				XDebug.LogError("No Network Library adapter found for " + name);
+				XDebug.LogError(!XDebug.logErrors ? null : ("No Network Library adapter found for " + name));
 
 			rb = GetComponent<Rigidbody>();
 
@@ -793,11 +793,9 @@ namespace emotitron.NST
 		/// </summary>
 		public void Teleport(Vector3 pos, Quaternion rot)
 		{
-			// On the server, send the teleport command to clients, and set to confirmation waiting condition.
-			// This will ignore all incoming messages from this object until a confirmation arrives.
-			if (na.IAmActingAuthority)
+			if (na.IsMine)
 			{
-				XDebug.Log("TELEPORT " + name + " " + NstId);
+				XDebug.Log(!XDebug.logInfo ? null : ("TELEPORT " + name + " " + NstId));
 				cachedTransform.position = pos;
 				cachedTransform.rotation = rot;
 
@@ -1089,7 +1087,7 @@ namespace emotitron.NST
 			int evenBytes = (bitWritten >> 3) + ((bitWritten % 8 == 0) ? 0 : 1);
 			int padding = (evenBytes << 3) - bitWritten;
 
-			XDebug.LogError("NST on " + name + " is attempting to create an update that exceeds the max allowed bytes.", evenBytes > NSTMaster.MAX_BYTES_PER_NST, true);
+			XDebug.LogError(!XDebug.logErrors ? null : ("NST on " + name + " is attempting to create an update that exceeds the max allowed bytes."), evenBytes > NSTMaster.MAX_BYTES_PER_NST, true);
 
 			// jump back and rewrite the size now that we know it. Then forward to where we were, plus the padding needed to make this even bytes.
 			bitstream.WriteIntAtPos(evenBytes, NSTMaster.UPDATELENGTH_BYTE_COUNT_SIZE, startPtr - NSTMaster.UPDATELENGTH_BYTE_COUNT_SIZE);

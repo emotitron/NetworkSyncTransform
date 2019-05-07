@@ -96,7 +96,7 @@ namespace emotitron.Utilities.Example
 
 
 
-#if UNITY_EDITOR && PUN_2_OR_NEWER
+#if PUN_2_OR_NEWER
 		public static PhotonView ReplaceNetIdWithPV(GameObject prefab)
 		{
 			var unetNI = prefab.GetComponent<UnityEngine.Networking.NetworkIdentity>();
@@ -112,8 +112,6 @@ namespace emotitron.Utilities.Example
 			return pv;
 		}
 #endif
-
-
 
 		[Tooltip("The prefab to use for representing the player")]
 		public GameObject playerPrefab;
@@ -135,7 +133,7 @@ namespace emotitron.Utilities.Example
 			{
 				pv = playerPrefab.GetComponent<PhotonView>();
 				if (pv == null)
-					pv = playerPrefab.AddComponent<PhotonView>();
+					pv = ReplaceNetIdWithPV(playerPrefab);
 
 			}
 		}
@@ -222,21 +220,6 @@ namespace emotitron.Utilities.Example
 
 #endif
 	}
-
-
-	//#if UNITY_EDITOR
-
-	//	[MenuItem("Window/NST/Add PUN Bootstrap", false, 1)]
-
-	//	public static void AddPUNLauncher()
-	//	{
-	//		if (Single)
-	//			return;
-
-	//		EnsureExistsInScene("NST PUN Launcher", true);
-	//	}
-	//#endif
-
 
 #if UNITY_EDITOR
 

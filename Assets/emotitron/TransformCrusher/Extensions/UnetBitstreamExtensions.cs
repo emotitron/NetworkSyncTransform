@@ -105,7 +105,7 @@ namespace emotitron.Compression
 			if (count > bufferlen)
 			{
 				//emotitron.Debugging.XDebug.LogError("Supplied buffer is shorter than the NetworkReader buffer, so copy will be limited to " + bufferlen + " bytes");
-				emotitron.Debugging.XDebug.LogError("Supplied buffer is shorter than the NetworkReader buffer, so copy will be limited to " + bufferlen + " bytes");
+				Debugging.XDebug.LogError(!Debugging.XDebug.logErrors ? null : ("Supplied buffer is shorter than the NetworkReader buffer, so copy will be limited to " + bufferlen + " bytes"));
 			}
 			for (int i = (int)reader.Position; i < count; ++i)
 			{

@@ -84,7 +84,9 @@ namespace emotitron.Utilities.Networking
 				if (mirrorHUD == null)
 					mirrorHUD = go.AddComponent<Mirror.NetworkManagerHUD>();
 
-#if MIRROR_1726_OR_NEWER
+#if MIRROR_3_0_OR_NEWER
+
+#elif MIRROR_1726_OR_NEWER
 
 				/// Initialize some stuff Mirror doesn't on its own (at least when this was written)
 				Transport.activeTransport = transport;

@@ -5,8 +5,8 @@ using emotitron.Compression;
 
 #if PUN_2_OR_NEWER
 using Photon.Pun;
-//#elif MIRROR
-//using Mirror;
+#elif MIRROR
+using Mirror;
 #else
 using UnityEngine.Networking;
 #endif
