@@ -346,6 +346,19 @@ namespace emotitron.NST
 				pv = ReplaceNetworkIdWithPhotonView(prefab);
 
 			GameObject go = PhotonNetwork.Instantiate(prefab.name, position, rotation, 0);
+
+			/// Remove NI on the fly to leave it intact in resources, to allow rolling back
+#if ENABLE_UNET
+#pragma warning disable CS0618 // Type or member is obsolete
+			var unetNI = go.GetComponent<UnityEngine.Networking.NetworkIdentity>();
+			DestroyImmediate(unetNI);
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
+#if MIRROR
+			var mirrorNI = go.GetComponent<Mirror.NetworkIdentity>();
+			DestroyImmediate(mirrorNI);
+#endif
+
 			go.transform.parent = parent;
 			return go;
 		}

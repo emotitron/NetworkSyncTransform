@@ -20,8 +20,8 @@ namespace emotitron.Compression
 	{
 		public const int VersionMajor = 3;
 		public const int VersionMinor = 5;
-		public const int VersionRevision = 1;
-		public const int Build = 3501;
+		public const int VersionRevision = 3;
+		public const int Build = 3503;
 
 		#region Static Crushers
 

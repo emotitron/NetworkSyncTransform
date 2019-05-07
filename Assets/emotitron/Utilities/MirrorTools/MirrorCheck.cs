@@ -8,6 +8,7 @@ using UnityEditor.Build.Reporting;
 
 #if MIRROR
 using Mirror;
+using System.Collections.Generic;
 #else
 using UnityEngine.Networking;
 #endif
@@ -25,67 +26,148 @@ namespace emotitron.Utilities.Networking
 	/// </summary>
 #if MIRROR && UNITY_2018_3_OR_NEWER && UNITY_EDITOR
 
-	public class MirrorCheck : MonoBehaviour, UnityEditor.Build.IPreprocessBuildWithReport
+	//[ExecuteInEditMode]
+	public class MirrorCheck : MonoBehaviour/*, UnityEditor.Build.IPreprocessBuildWithReport*/
 	{
-		public int callbackOrder { get { return 0; } }
 
-		public void OnPreprocessBuild(BuildReport report)
+		private void Awake()
 		{
-			RunCheck();
-		}
+			/// Remove the UNET NetIdentity if it exists on this object.
+			var ni = GetComponent<UnityEngine.Networking.NetworkIdentity>();
 
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-		public static void RunCheck()
-		{
-			var scene = SceneManager.GetActiveScene();
-
-			//var objs = Resources.FindObjectsOfTypeAll<MirrorCheck>();
-			var objs = Object.FindObjectsOfType<MirrorCheck>();
-
-			// Find objects in scene - this will generally just be the NetworkManager.
-			for (int i = 0; i < objs.Length; i++)
+			if (ni)
 			{
-				objs[i].StripNetworkManager();
+				DestroyImmediate(ni);
+				return;
 			}
 
-			//// Option for stripping all prefabs in all resource folders of NI
-			//objs = Resources.FindObjectsOfTypeAll<MirrorCheck>();
+			/// If this wasn't a NI, the likely is the NM
 
-			//// MirrorCheck on objects in resource folders should be prefabs. Replace NI on all of those.
-			//for (int i = 0; i < objs.Length; i++)
-			//{
-			//	GiveMirrorNetworkIdentity(objs[i].gameObject);
-			//}
+			/// Remove the UNET NetManagerHUD if it exists on this object.
+			var nmhud = GetComponent<UnityEngine.Networking.NetworkManagerHUD>();
+			if (nmhud)
+				DestroyImmediate(nmhud);
+
+			/// Remove the UNET NetManager if it exists on this object.
+			var nm = GetComponent<UnityEngine.Networking.NetworkManager>();
+
+			if (nm)
+				DestroyImmediate(nm);
+
 		}
 
-		public static Mirror.NetworkManager ConvertNetworkManager(UnityEngine.Networking.NetworkManager unetNM, UnityEngine.Networking.NetworkManagerHUD unetHUD)
+
+		[InitializeOnLoadMethod]
+		public static void SubscribeToSceneChange()
 		{
+			//UnityEditor.SceneManagement.EditorSceneManager.sceneOpening += SceneOpeningCallback;
+			UnityEditor.SceneManagement.EditorSceneManager.sceneOpened += SceneOpenedCallback;
+		}
+
+		static bool mirrorNetIdAlreadyAddedToResources;
+
+		//static void SceneOpeningCallback(string path, UnityEditor.SceneManagement.OpenSceneMode mode)
+		static void SceneOpenedCallback(Scene scene, UnityEditor.SceneManagement.OpenSceneMode mode)
+		{
+			// Only even attempt mirror check if we are looking at a sample scene.
+			if (!scene.name.Contains("Example") && !scene.name.Contains("Sample"))
+				return;
+
+			Debug.Log("<b>Opening Scene</b> " + scene.name); //  // path);
+			//if (_mode == UnityEditor.SceneManagement.OpenSceneMode.)
+			// get root objects in scene
+			List<GameObject> rootObjects = new List<GameObject>();
+			//Scene scene = SceneManager.GetActiveScene();
+			scene.GetRootGameObjects(rootObjects);
+
+			/// Need to make sure all NetIds have been converted before converting NM
+			if (!mirrorNetIdAlreadyAddedToResources)
+			{
+				Debug.Log("MirrorNetId being added to all resources");
+				AddMirrorNetIdToResources();
+				mirrorNetIdAlreadyAddedToResources = true;
+			}
+
+			// iterate root objects and do something
+			for (int i = 0; i < rootObjects.Count; ++i)
+			{
+				GameObject go = rootObjects[i];
+				var mc = go.GetComponent<MirrorCheck>();
+				{
+					if (mc)
+					{
+						Debug.Log("Found MC on " + go.name);
+						mc.AddMirrorNetManager();
+					}
+				}
+			}
+		}
+
+		public static void AddMirrorNetIdToResources()
+		{
+			Debug.Log("LoadAllREsources !!!!");
+			// Option for stripping all prefabs in all resource folders of NI
+			var objs = Resources.LoadAll<MirrorCheck>("");
+
+			// MirrorCheck on objects in resource folders should be prefabs. Replace NI on all of those.
+			for (int i = 0; i < objs.Length; i++)
+			{
+				Debug.Log("<b>Replacing NI on </b>" + objs[i].gameObject.name);
+				AddMirrorNetowrkIdentity(objs[i].gameObject);
+			}
+
+			AssetDatabase.SaveAssets();
+		}
+
+		public static void RemoveUNetNetIdFromResources()
+		{
+			// Option for stripping all prefabs in all resource folders of NI
+			var objs = Resources.FindObjectsOfTypeAll<MirrorCheck>();
+
+			// MirrorCheck on objects in resource folders should be prefabs. Replace NI on all of those.
+			for (int i = 0; i < objs.Length; i++)
+			{
+				Debug.Log("<b>Replacing NI on </b>" + objs[i].gameObject.name);
+				RemoveUNetNetowrkIdentity(objs[i].gameObject);
+			}
+		}
+
+		/// <summary>
+		/// Add Mirror copies of Unet NM and NMHud. Will leave both and just delete the UNET NetworkManager at runtime.
+		/// </summary>
+		/// <returns></returns>
+		public Mirror.NetworkManager AddMirrorNetManager()
+		{
+			var unetNM = GetComponent<UnityEngine.Networking.NetworkManager>();
+			Debug.Log("unet nm? " + gameObject.name + " " + (unetNM != null));
+
 			if (unetNM == null)
 				return null;
 
-			var go = unetNM.gameObject;
-			Mirror.NetworkManager mirrorNM = null;
+			var mirrorNM = GetComponent<Mirror.NetworkManager>();
+			Debug.Log("mirror nm? " + gameObject.name + " " + (mirrorNM != null));
+
+			if (mirrorNM)
+				return mirrorNM;
+
+			var unetHUD = GetComponent<UnityEngine.Networking.NetworkManagerHUD>();
+			var mirrorHUD = GetComponent<Mirror.NetworkManagerHUD>();
 
 			/// If this has a UNET NM on it, replace it with Mirror, and copy the playerprefab over
 			if (unetNM)
 			{
-				var transport = go.GetComponent<Transport>();
+				var transport = GetComponent<Transport>();
 				if (!transport)
-					transport = go.AddComponent<TelepathyTransport>();
+					transport = gameObject.AddComponent<TelepathyTransport>();
 
-				mirrorNM = go.GetComponent<Mirror.NetworkManager>();
-				if (mirrorNM == null)
-				{
-					mirrorNM = go.AddComponent<Mirror.NetworkManager>();
-					NetworkManager.singleton = mirrorNM;
-				}
+				mirrorNM = gameObject.AddComponent<Mirror.NetworkManager>();
+				NetworkManager.singleton = mirrorNM;
 
-				var mirrorHUD = go.GetComponent<Mirror.NetworkManagerHUD>();
 				if (mirrorHUD == null)
-					mirrorHUD = go.AddComponent<Mirror.NetworkManagerHUD>();
+					mirrorHUD = gameObject.AddComponent<Mirror.NetworkManagerHUD>();
 
 #if MIRROR_3_0_OR_NEWER
-
+				Transport.activeTransport = transport;
 #elif MIRROR_1726_OR_NEWER
 
 				/// Initialize some stuff Mirror doesn't on its own (at least when this was written)
@@ -113,27 +195,33 @@ namespace emotitron.Utilities.Networking
 
 #endif // End Mirror_1726
 
-				/// Destroy the Unet HUD
+				///// Destroy the Unet HUD
 
-				if (unetHUD)
-					Object.DestroyImmediate(unetHUD, true);
+				//if (unetHUD)
+				//	Object.DestroyImmediate(unetHUD, true);
 
 				/// Copy values from UNET NM to Mirror NM
 				if (unetNM)
 				{
 					CopyPlayerPrefab(unetNM, mirrorNM);
 					CopySpawnablePrefabs(unetNM, mirrorNM);
-					Object.DestroyImmediate(unetNM, true);
+					//Object.DestroyImmediate(unetNM, true);
 
 				}
-
 			}
 
-			Object.DestroyImmediate(unetHUD, true);
-			Object.DestroyImmediate(unetNM, true);
+			//Object.DestroyImmediate(unetHUD, true);
+			//Object.DestroyImmediate(unetNM, true);
 
-			UnityEditor.SceneManagement.EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+			//if (!Application.isPlaying)
+			//	UnityEditor.SceneManagement.EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+
 			return mirrorNM;
+		}
+
+		private void DestroyUNetNetManager()
+		{
+
 		}
 
 		private void StripNetworkManager()
@@ -142,26 +230,70 @@ namespace emotitron.Utilities.Networking
 			var unetNM = GetComponent<UnityEngine.Networking.NetworkManager>();
 			var unetHUD = GetComponent<UnityEngine.Networking.NetworkManagerHUD>();
 
-			ConvertNetworkManager(unetNM, unetHUD);
+			AddMirrorNetManager();
 		}
 
-		public static void GiveMirrorNetworkIdentity(GameObject prefab)
+		public static void AddMirrorNetowrkIdentity(GameObject prefab)
 		{
 			var unetNI = prefab.GetComponent<UnityEngine.Networking.NetworkIdentity>();
 
+			if (!unetNI)
+				return;
+
 			var mirrorNI = prefab.GetComponent<Mirror.NetworkIdentity>();
 
-			if (!mirrorNI)
+			if (mirrorNI)
+				return;
+
+
+			///// TEST
+			//mirrorNI = prefab.AddComponent<Mirror.NetworkIdentity>();
+			//mirrorNI.localPlayerAuthority = unetNI.localPlayerAuthority;
+			//mirrorNI.serverOnly = unetNI.serverOnly;
+			//return;
+
+
+			if (PrefabUtility.IsPartOfPrefabAsset(prefab))
 			{
-				mirrorNI = prefab.AddComponentToPrefab<Mirror.NetworkIdentity>();
+				var path = AssetDatabase.GetAssetPath(prefab);
+				var prefabRoot = PrefabUtility.LoadPrefabContents(path);
+
+				/// Check if this prefab already has been converted and it just hasnt propogated.
+				mirrorNI = prefabRoot.GetComponent<Mirror.NetworkIdentity>();
+				if (mirrorNI)
+					return;
+
+				try
+				{
+					mirrorNI = prefabRoot.AddComponent<Mirror.NetworkIdentity>();
+					Debug.Log("Trying " + prefab.name + " " + (mirrorNI != null));
+
+					mirrorNI.localPlayerAuthority = unetNI.localPlayerAuthority;
+					mirrorNI.serverOnly = unetNI.serverOnly;
+					PrefabUtility.SaveAsPrefabAssetAndConnect(prefabRoot, path, InteractionMode.UserAction);
+					//EditorUtility.SetDirty(prefab.gameObject);
+					//AssetDatabase.SaveAssets();
+				}
+				finally
+				{
+					PrefabUtility.UnloadPrefabContents(prefabRoot);
+				}
 			}
 
+			//	EditorUtility.SetDirty(prefab.gameObject);
+			//	AssetDatabase.SaveAssets();
+
+		}
+
+		public static void RemoveUNetNetowrkIdentity(GameObject prefab)
+		{
+			var unetNI = prefab.GetComponent<UnityEngine.Networking.NetworkIdentity>();
+
 			if (unetNI)
-			{
-				mirrorNI.localPlayerAuthority = unetNI.localPlayerAuthority;
-				mirrorNI.serverOnly = unetNI.serverOnly;
 				DestroyImmediate(unetNI, true);
-			}
+
+			EditorUtility.SetDirty(prefab);
+			AssetDatabase.SaveAssets();
 		}
 
 		public static void CopyPlayerPrefab(UnityEngine.Networking.NetworkManager src, Mirror.NetworkManager targ)
@@ -169,12 +301,13 @@ namespace emotitron.Utilities.Networking
 			/// Make sure the player object is using mirror components
 			if (src.playerPrefab)
 			{
-				GiveMirrorNetworkIdentity(src.playerPrefab);
+				AddMirrorNetowrkIdentity(src.playerPrefab);
 
 				targ.autoCreatePlayer = src.autoCreatePlayer;
 				targ.playerPrefab = src.playerPrefab;
 				var ppNI = targ.playerPrefab.GetComponent<NetworkIdentity>();
-				ppNI.localPlayerAuthority = true;
+				if (ppNI)
+					ppNI.localPlayerAuthority = true;
 			}
 		}
 
@@ -182,7 +315,7 @@ namespace emotitron.Utilities.Networking
 		{
 			foreach (var obj in src.spawnPrefabs)
 			{
-				GiveMirrorNetworkIdentity(obj);
+				AddMirrorNetowrkIdentity(obj);
 
 				if (!targ.spawnPrefabs.Contains(obj))
 					targ.spawnPrefabs.Add(obj);
@@ -190,6 +323,7 @@ namespace emotitron.Utilities.Networking
 		}
 	}
 
+	/// Build handling for mirror... removes UNET parts
 #elif MIRROR
 
 	public class MirrorCheck : MonoBehaviour 
@@ -197,13 +331,29 @@ namespace emotitron.Utilities.Networking
 		private void Awake()
 		{
 			/// Remove the UNET NetIdentity if it exists on this object.
-			var netidentity = GetComponent<UnityEngine.Networking.NetworkIdentity>();
+			var ni = GetComponent<UnityEngine.Networking.NetworkIdentity>();
 
-			if (netidentity)
-				DestroyImmediate(netidentity);
+			if (ni)
+			{
+				DestroyImmediate(ni);
+				return;
+			}
+
+			/// If this wasn't a NI, the likely is the NM
+
+			/// Remove the UNET NetManagerHUD if it exists on this object.
+			var nmhud = GetComponent<UnityEngine.Networking.NetworkManagerHUD>();
+			if (nmhud)
+				DestroyImmediate(nmhud);
+
+			/// Remove the UNET NetManager if it exists on this object.
+			var nm = GetComponent<UnityEngine.Networking.NetworkManager>();
+
+			if (nm)
+				DestroyImmediate(nm);
+
 		}
 	}
-
 #else
 
 	public class MirrorCheck : MonoBehaviour { }

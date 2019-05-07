@@ -66,8 +66,6 @@ namespace emotitron.Utilities.Networking
 
 	public static class NetMsgCallbacks
 	{
-		private static readonly byte[] reusablebuffer = new byte[4096];
-
 		public delegate void ByteBufferCallback(byte[] buffer);
 
 		private static Dictionary<int, CallbackLists> callbacks = new Dictionary<int, CallbackLists>();
@@ -175,7 +173,8 @@ namespace emotitron.Utilities.Networking
 		#endregion  // END HANDLERS
 
 		#endregion  // END PUN2
-#else
+
+#else  // UNET AND MIRROR
 
 
 		private static bool RegisterMessageId(short msgId)
@@ -370,13 +369,6 @@ namespace emotitron.Utilities.Networking
 #if MIRROR
 		public static void OnMessage(NetworkConnection conn, BytesMessageNonalloc bmsg)
 		{
-			//var bmsg = NetMsgSends.bytesmsg;
-			//bmsg.buffer = reusablebuffer;
-
-			//bmsg.Deserialize(msg.reader);
-
-			//var msgId = msg.msgType;
-
 			if (!callbacks.ContainsKey(0))
 				return;
 
@@ -399,7 +391,6 @@ namespace emotitron.Utilities.Networking
 		public static void OnMessage(NetworkMessage msg)
 		{
 			var bmsg = NetMsgSends.bytesmsg;
-			bmsg.buffer = reusablebuffer;
 
 			bmsg.Deserialize(msg.reader);
 
@@ -410,7 +401,6 @@ namespace emotitron.Utilities.Networking
 
 			var cbs = callbacks[msgId];
 
-
 			/// Send to all byte[] buffer callbacks
 			var bufferCBList = cbs.bufferCallbacks;
 
@@ -418,14 +408,14 @@ namespace emotitron.Utilities.Networking
 			{
 				int cnt = bufferCBList.Count;
 				for (int i = 0; i < cnt; ++i)
-					bufferCBList[i](reusablebuffer);
+					bufferCBList[i](BytesMessageNonalloc.incomingbuffer);
 			}
 		}
 #endif
 
-	}
+#endif // END MIRROR.UNET
 
-#endif
+	}
 
 }
 #pragma warning restore CS0618 // UNET obsolete

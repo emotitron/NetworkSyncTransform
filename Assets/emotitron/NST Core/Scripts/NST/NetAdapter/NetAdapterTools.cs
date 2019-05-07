@@ -353,7 +353,7 @@ namespace emotitron.NST
 			if (_MA == "" || _NA == "" || MA == "" || NA == "")
 				return false;
 
-			XDebug.Log(!XDebug.logInfo ? null : ("Switching to " + libSuffix + " adapters... recompiling should happen automatically."), true, true);
+			XDebug.Log("Switching to " + libSuffix + " adapters... recompiling should happen automatically.", true, true);
 
 			if (MasterNetAdapter.NetworkLibrary != newLib)
 				success |= AssetDatabase.CopyAsset(_MA, MA);
@@ -517,13 +517,10 @@ namespace emotitron.NST
 			{
 
 #if MIRROR
-				// Check for existing UNET NM. If it exists, copy its contents to Mirror NM and destroy it.
-				var unetNM = FindObjects.FindObjectsOfTypeAllInScene<UnityEngine.Networking.NetworkManager>();
-				if (unetNM.Count > 0)
+				List<NetworkManager> mirrorNM = FindObjects.FindObjectsOfTypeAllInScene<Mirror.NetworkManager>();
+				if (mirrorNM.Count > 0)
 				{
-					var unetHUD = unetNM[0].GetComponent<UnityEngine.Networking.NetworkManagerHUD>();
-					var mirrorNM = Utilities.Networking.MirrorCheck.ConvertNetworkManager(unetNM[0], unetHUD);
-					return mirrorNM;
+					return mirrorNM[0];
 				}
 #endif
 

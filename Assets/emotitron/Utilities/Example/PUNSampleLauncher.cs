@@ -54,17 +54,17 @@ namespace emotitron.Utilities.Example
 		{
 			if (playerPrefab)
 			{
-				pv = playerPrefab.GetComponent<PhotonView>();
+				PhotonView pv = playerPrefab.GetComponent<PhotonView>();
 				if (pv == null)
-					pv = ReplaceNetIdWithPV(playerPrefab);
+					AddPhotonView(playerPrefab);
 			}
 
 			/// Option for stripping all prefabs in all resource folders of NI
-			var objs = Resources.FindObjectsOfTypeAll<Networking.MirrorCheck>();
+			var objs = Resources.LoadAll<Networking.MirrorCheck>("");
 			
 			// MirrorCheck on objects in resource folders should be prefabs. Replace NI on all of those.
 			for (int i = 0; i < objs.Length; i++)
-				ReplaceNetIdWithPV(objs[i].gameObject);
+				AddPhotonView(objs[i].gameObject);
 
 		}
 
@@ -97,19 +97,20 @@ namespace emotitron.Utilities.Example
 
 
 #if PUN_2_OR_NEWER
-		public static PhotonView ReplaceNetIdWithPV(GameObject prefab)
+		public static void AddPhotonView(GameObject prefab)
 		{
-			var unetNI = prefab.GetComponent<UnityEngine.Networking.NetworkIdentity>();
+			//var unetNI = prefab.GetComponent<UnityEngine.Networking.NetworkIdentity>();
 
 			var pv = prefab.GetComponent<PhotonView>();
 
 			if (!pv)
-				pv = prefab.AddComponentToPrefab<PhotonView>();
+				PrefabUtils.AddComponentToPrefab<PhotonView>(prefab);
 
-			if (unetNI)
-				DestroyImmediate(unetNI, true);
 
-			return pv;
+			//if (unetNI)
+			//	DestroyImmediate(unetNI, true);
+
+			//return pv;
 		}
 #endif
 
@@ -122,7 +123,6 @@ namespace emotitron.Utilities.Example
 #if PUN_2_OR_NEWER
 
 		public static GameObject localPlayer;
-		[HideInInspector] public PhotonView pv;
 		
 		private void Awake()
 		{
@@ -131,9 +131,9 @@ namespace emotitron.Utilities.Example
 
 			if (playerPrefab)
 			{
-				pv = playerPrefab.GetComponent<PhotonView>();
+				PhotonView pv = playerPrefab.GetComponent<PhotonView>();
 				if (pv == null)
-					pv = ReplaceNetIdWithPV(playerPrefab);
+					AddPhotonView(playerPrefab);
 
 			}
 		}

@@ -1087,7 +1087,8 @@ namespace emotitron.NST
 			int evenBytes = (bitWritten >> 3) + ((bitWritten % 8 == 0) ? 0 : 1);
 			int padding = (evenBytes << 3) - bitWritten;
 
-			XDebug.LogError(!XDebug.logErrors ? null : ("NST on " + name + " is attempting to create an update that exceeds the max allowed bytes."), evenBytes > NSTMaster.MAX_BYTES_PER_NST, true);
+			XDebug.LogError((!XDebug.logErrors || evenBytes <= NSTMaster.MAX_BYTES_PER_NST) ? null : 
+				("NST on " + name + " is attempting to create an update that exceeds the max allowed bytes."), evenBytes > NSTMaster.MAX_BYTES_PER_NST, true);
 
 			// jump back and rewrite the size now that we know it. Then forward to where we were, plus the padding needed to make this even bytes.
 			bitstream.WriteIntAtPos(evenBytes, NSTMaster.UPDATELENGTH_BYTE_COUNT_SIZE, startPtr - NSTMaster.UPDATELENGTH_BYTE_COUNT_SIZE);
