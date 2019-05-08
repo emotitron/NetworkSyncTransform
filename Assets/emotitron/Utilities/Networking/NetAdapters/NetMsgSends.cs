@@ -136,6 +136,7 @@ namespace emotitron.Utilities.Networking
 					ClientScene.readyConnection.SendByChannel(msgId, msg, channel);
 #endif
 			}
+			/// Send To Others
 			else
 			{
 				if (NetworkServer.active)

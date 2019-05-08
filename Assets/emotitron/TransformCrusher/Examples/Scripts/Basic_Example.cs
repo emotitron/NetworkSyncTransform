@@ -13,9 +13,6 @@ namespace emotitron.Compression.Sample
 	/// </summary>
 	public class Basic_Example : NetworkBehaviour
 	{
-		public const byte CLIENT_SND_ID = 222;
-		public const byte SERVER_SND_ID = 223;
-
 		// None of this initialization stuff is needed. Simply declaring a public crusher is all you need to do.
 		// These particular settings are just so this example comes up with the sizes described.
 		public TransformCrusher crusher = new TransformCrusher()
