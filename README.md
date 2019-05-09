@@ -1,7 +1,7 @@
 ![Header](https://github.com/emotitron/NetworkSyncTransform/blob/master/Docs/img/NST_DocumentHeader.jpg?raw=true)
 # Network Sync Transform
 
-[**NST Free Current Release** - Unity Package Download](https://github.com/emotitron/NetworkSyncTransform/releases/download/5.7.8/NST_Core_5708_Release.unitypackage)
+[**NST Free Current Release** - Unity Package Download](https://github.com/emotitron/NetworkSyncTransform/releases)
 
 Networking HLAPI for Photon PUN/PUN2 , UNet and Mirror. This asset incorporates a circular buffer based transform sync engine, creating very smooth and stable movement replication - even in lossy/jittery real-world network conditions.
 
@@ -27,7 +27,7 @@ I am trying to avoid making any additions in functionality to NST, as I am worki
 ## Free NST Core Download
 You are welcome to use this library for games, however scripts/components not explicity marked with MIT licenses may not sold be part of assets libraries.
 
-[**NST Free Current Release** - Unity Package Download](https://github.com/emotitron/NetworkSyncTransform/releases/download/5.7.8/NST_Core_5708_Release.unitypackage)
+[**NST Free Current Release** - Unity Package Download](https://github.com/emotitron/NetworkSyncTransform/releases)
 
 ## NST Add-ons on Unity Asset Store
 These are not required, but they can be purchased on the asset store if you would like to help contribute to this project, or just desire the functionality and would rather not write it yourself.
