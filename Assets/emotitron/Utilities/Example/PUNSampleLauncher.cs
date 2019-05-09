@@ -78,9 +78,9 @@ namespace emotitron.Utilities.Example
 		{
 			if (playerPrefab)
 			{
-				pv = playerPrefab.GetComponent<PhotonView>();
+				PhotonView pv = playerPrefab.GetComponent<PhotonView>();
 				if (pv == null)
-					pv = ReplaceNetIdWithPV(playerPrefab);
+					AddPhotonView(playerPrefab);
 			}
 
 			/// Option for stripping all prefabs in all resource folders of NI
@@ -88,7 +88,7 @@ namespace emotitron.Utilities.Example
 
 			// MirrorCheck on objects in resource folders should be prefabs. Replace NI on all of those.
 			for (int i = 0; i < objs.Length; i++)
-				ReplaceNetIdWithPV(objs[i].gameObject);
+				AddPhotonView(objs[i].gameObject);
 		}
 #else
 	{
@@ -131,7 +131,7 @@ namespace emotitron.Utilities.Example
 
 			if (playerPrefab)
 			{
-				PhotonView pv = playerPrefab.GetComponent<PhotonView>();
+				var pv = playerPrefab.GetComponent<PhotonView>();
 				if (pv == null)
 					AddPhotonView(playerPrefab);
 

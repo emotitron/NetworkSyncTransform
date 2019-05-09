@@ -1,6 +1,10 @@
 ﻿
 namespace emotitron.Utilities.Networking
 {
+
+	public interface IOnNetSerialize { bool OnNetSerialize(int frameId, byte[] buffer, ref int bitposition); }
+	public interface IOnNetDeserialize { void OnNetDeserialize(int sourceFrameId, int originFrameId, int localFrameId, byte[] buffer, ref int bitposition); }
+
 	// Callbacks that the NST uses for notifications of network events
 	public interface INetEvents
 	{
@@ -68,6 +72,7 @@ namespace emotitron.Utilities.Networking
 	{
 		void OnJoinRoomFailed();
 	}
+
 
 }
 
