@@ -11,7 +11,7 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 #elif MIRROR
 using Mirror;
-#else
+#elif !UNITY_2019_1_OR_NEWER
 using UnityEngine.Networking;
 #endif
 
@@ -25,6 +25,8 @@ namespace emotitron.Utilities.Networking
 {
 
 #if !PUN_2_OR_NEWER
+#if !UNITY_2019_1_OR_NEWER || MIRROR
+
 	/// <summary>
 	///  Nonalloc message for Mirror, since we can't directly send writers with Mirror. Set the buffer and length values prior to sending/rcving.
 	/// </summary>
@@ -36,37 +38,26 @@ namespace emotitron.Utilities.Networking
 
 		public BytesMessageNonalloc() { }
 
-		public BytesMessageNonalloc(byte[] nonalloc)
-		{
-			this.buffer = nonalloc;
-		}
-
-		public BytesMessageNonalloc(byte[] nonalloc, ushort length)
-		{
-			this.buffer = nonalloc;
-			this.length = length;
-		}
-
 		public override void Serialize(NetworkWriter writer)
 		{
-			writer.Write(length);
-			for (int i = 0; i < length; i++)
-				writer.Write(buffer[i]);
+			writer.Write(buffer, 0, length);
 		}
 
 		public override void Deserialize(NetworkReader reader)
 		{
-			length = reader.ReadUInt16();
+			length = (ushort)(reader.Length - reader.Position);
+			reader.ReadBytes(length);
 			for (int i = 0; i < length; i++)
 				incomingbuffer[i] = reader.ReadByte();
 		}
 	}
 
 #endif
+#endif
 
 	public static class NetMsgCallbacks
 	{
-		public delegate void ByteBufferCallback(byte[] buffer);
+		public delegate void ByteBufferCallback(object conn, int connId, byte[] buffer);
 
 		private static Dictionary<int, CallbackLists> callbacks = new Dictionary<int, CallbackLists>();
 
@@ -97,27 +88,26 @@ namespace emotitron.Utilities.Networking
 				return;
 
 			// ignore messages from self.
-			if (PhotonNetwork.IsMasterClient && PhotonNetwork.MasterClient.ActorNumber == photonEvent.Sender())
+			if (PhotonNetwork.IsMasterClient && PhotonNetwork.MasterClient.ActorNumber == photonEvent.Sender)
 			{
 				Debug.Log("Master Client talking to self? Normal occurance for a few seconds after Master leaves the game and a new master is selected.");
 				return;
 			}
 
-			byte[] buffer = (photonEvent.CustomData() as byte[]);
+			byte[] buffer = (photonEvent.CustomData as byte[]);
 
 			var cbs = callbacks[msgId];
 			if (cbs.bufferCallbacks != null && cbs.bufferCallbacks.Count > 0)
 			{
 				foreach (var cb in cbs.bufferCallbacks)
-					cb(buffer);
+					cb(null, photonEvent.Sender, buffer);
 			}
-
 		}
 
 		#region Handler Registration
 
 		[System.Obsolete("Removed the asServer from UNET side, killing it here as well.")]
-		public static void RegisterHandler(byte msgid, ByteBufferCallback callback, bool asServer)
+		public static void RegisterCallback(byte msgid, ByteBufferCallback callback, bool asServer)
 		{
 			if (!callbacks.ContainsKey(msgid))
 				callbacks.Add(msgid, new CallbackLists());
@@ -131,7 +121,7 @@ namespace emotitron.Utilities.Networking
 				cbs.Add(callback);
 		}
 
-		public static void RegisterHandler(byte msgid, ByteBufferCallback callback)
+		public static void RegisterCallback(byte msgid, ByteBufferCallback callback)
 		{
 			if (!callbacks.ContainsKey(msgid))
 				callbacks.Add(msgid, new CallbackLists());
@@ -146,19 +136,19 @@ namespace emotitron.Utilities.Networking
 		}
 
 		[System.Obsolete("Removed the asServer from UNET side, killing it here as well.")]
-		public static void UnregisterHandler(byte msgid, ByteBufferCallback callback, bool asServer)
+		public static void UnregisterCallback(byte msgid, ByteBufferCallback callback, bool asServer)
 		{
 			if (callbacks.ContainsKey(msgid))
 			{
 				var cbs = callbacks[msgid];
 				cbs.bufferCallbacks.Remove(callback);
 
-				if (cbs.bufferCallbacks.Count == 0 )
+				if (cbs.bufferCallbacks.Count == 0)
 					callbacks.Remove(msgid);
 			}
 		}
 
-		public static void UnregisterHandler(byte msgid, ByteBufferCallback callback)
+		public static void UnregisterCallback(byte msgid, ByteBufferCallback callback)
 		{
 			if (callbacks.ContainsKey(msgid))
 			{
@@ -174,8 +164,13 @@ namespace emotitron.Utilities.Networking
 
 		#endregion  // END PUN2
 
-#else  // UNET AND MIRROR
+#elif MIRROR || !UNITY_2019_1_OR_NEWER  // UNET AND MIRROR
 
+		public const byte DEF_MSG_ID = 111;
+		public static void RegisterDefaultHandler()
+		{
+			RegisterMessageId(DEF_MSG_ID);
+		}
 
 		private static bool RegisterMessageId(short msgId)
 		{
@@ -201,8 +196,8 @@ namespace emotitron.Utilities.Networking
 				NetworkManager.singleton.client.RegisterHandler(msgId, OnMessage);
 #endif
 			}
-			else
-				return false;
+			//else
+			//	return false;
 
 			if (!callbacks.ContainsKey(msgId))
 				callbacks.Add(msgId, new CallbackLists());
@@ -245,7 +240,7 @@ namespace emotitron.Utilities.Networking
 		}
 
 
-		public static void RegisterHandler(short msgId, ByteBufferCallback callback)
+		public static void RegisterCallback(short msgId, ByteBufferCallback callback)
 		{
 
 #if MIRROR
@@ -255,8 +250,10 @@ namespace emotitron.Utilities.Networking
 			if (callback == null)
 				return;
 
-			if (!RegisterMessageId(msgId))
-				return;
+			/// Try to register generic handler with unet. May fail. Brute force should retry later constantly.
+			RegisterMessageId(msgId);
+			//if (!RegisterMessageId(msgId))
+			//	return;
 
 			/// make a new list if this is the first item
 			if (callbacks[msgId].bufferCallbacks == null)
@@ -321,7 +318,7 @@ namespace emotitron.Utilities.Networking
 		}
 
 
-		public static void UnregisterHandler(short msgId, ByteBufferCallback callback)
+		public static void UnregisterCallback(short msgId, ByteBufferCallback callback)
 		{
 #if MIRROR
 			msgId = 0;
@@ -344,7 +341,7 @@ namespace emotitron.Utilities.Networking
 		}
 
 		[System.Obsolete("Moving to make the asServer handling not needed, to make send more generic.")]
-		public static void UnregisterHandler(short msgId, ByteBufferCallback callback, bool asServer)
+		public static void UnregisterCallback(short msgId, ByteBufferCallback callback, bool asServer)
 		{
 			if (!callbacks.ContainsKey(msgId) || callbacks[msgId].bufferCallbacks == null)
 				return;
@@ -384,7 +381,7 @@ namespace emotitron.Utilities.Networking
 
 				int cnt = bufferCBList.Count;
 				for (int i = 0; i < cnt; ++i)
-					bufferCBList[i](buffer);
+					bufferCBList[i](conn, conn.connectionId, buffer);
 			}
 		}
 #else
@@ -408,7 +405,7 @@ namespace emotitron.Utilities.Networking
 			{
 				int cnt = bufferCBList.Count;
 				for (int i = 0; i < cnt; ++i)
-					bufferCBList[i](BytesMessageNonalloc.incomingbuffer);
+					bufferCBList[i](msg.conn, msg.conn.connectionId, BytesMessageNonalloc.incomingbuffer);
 			}
 		}
 #endif
@@ -416,6 +413,5 @@ namespace emotitron.Utilities.Networking
 #endif // END MIRROR.UNET
 
 	}
-
 }
 #pragma warning restore CS0618 // UNET obsolete

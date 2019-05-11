@@ -1,5 +1,7 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
 using UnityEngine;
 using emotitron.Utilities.SmartVars;
 using emotitron.Compression;
@@ -45,7 +47,7 @@ namespace emotitron.NST
 		public NSTNetAdapter na;
 		public INSTTransformElement nstElement;
 
-		#region Inspector Values
+#region Inspector Values
 
 		[Tooltip("Which events will cause full updates to be sent on the next tick.")]
 		public SendCullMask sendCullMask = SendCullMask.OnChanges | SendCullMask.OnTeleport | SendCullMask.OnCustomMsg | SendCullMask.OnRewindCast;
@@ -69,7 +71,7 @@ namespace emotitron.NST
 		[Tooltip("Teleport command from server will force the server state of this element on the owner.")]
 		public bool teleportOverride = true;
 
-		#endregion
+#endregion
 
 
 		[HideInInspector] public GameObject ghostGO;
@@ -671,3 +673,5 @@ namespace emotitron.NST
 #endif
 		}
 
+
+#endif

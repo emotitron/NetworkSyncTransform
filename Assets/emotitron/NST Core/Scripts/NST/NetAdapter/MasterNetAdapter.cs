@@ -348,7 +348,7 @@ namespace emotitron.NST
 			GameObject go = PhotonNetwork.Instantiate(prefab.name, position, rotation, 0);
 
 			/// Remove NI on the fly to leave it intact in resources, to allow rolling back
-#if ENABLE_UNET
+#if !UNITY_2019_1_OR_NEWER
 #pragma warning disable CS0618 // Type or member is obsolete
 			var unetNI = go.GetComponent<UnityEngine.Networking.NetworkIdentity>();
 			DestroyImmediate(unetNI);
@@ -373,9 +373,15 @@ namespace emotitron.NST
 
 		public static PhotonView ReplaceNetworkIdWithPhotonView(GameObject prefab)
 		{
+#if !UNITY_2019_1_OR_NEWER
 #pragma warning disable CS0618 // Type or member is obsolete
 			var unetNI = prefab.GetComponent<UnityEngine.Networking.NetworkIdentity>();
+			if (unetNI)
+			{
+				DestroyImmediate(unetNI, true);
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
+#endif
 
 			var pv = prefab.GetComponent<PhotonView>();
 
@@ -384,10 +390,6 @@ namespace emotitron.NST
 				pv = prefab.AddComponentToPrefab<PhotonView>();
 			}
 
-			if (unetNI)
-			{
-				DestroyImmediate(unetNI, true);
-			}
 			return pv;
 		}
 
@@ -779,7 +781,7 @@ namespace emotitron.NST
 
 #endregion // END PUN
 
-#else
+#elif MIRROR || !UNITY_2019_1_OR_NEWER
 
 /// ------------------------------------   UNET / MIRROR    -------------------------------------------------
 /// ------------------------------------   UNET / MIRROR    -------------------------------------------------

@@ -1,5 +1,7 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
 using UnityEngine;
 using emotitron.Utilities.SmartVars;
 using emotitron.Controller;
@@ -23,7 +25,7 @@ namespace emotitron.NST.Sample
 	/// </summary>
 	public class NSTSampleController : NSTComponent, INstStart
 	{
-		#region Inspector Fields
+#region Inspector Fields
 
 		[Tooltip("Leave empty to use the game object this component is attached to.")]
 		public GameObject _gameObject;
@@ -68,7 +70,7 @@ namespace emotitron.NST.Sample
 
 		public bool enableBasicTouch = false;
 
-		#endregion
+#endregion
 
 		private bool hasAuthority;
 		private Rigidbody rb;
@@ -448,3 +450,5 @@ namespace emotitron.NST.Sample
 	
 #endif
 }
+
+#endif

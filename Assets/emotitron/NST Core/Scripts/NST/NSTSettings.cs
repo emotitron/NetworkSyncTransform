@@ -1,5 +1,7 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
 using UnityEngine;
 using System;
 using System.Reflection;
@@ -75,7 +77,9 @@ namespace emotitron.NST
 			//FindMissingScripts.DestroyMissingComponentOnRoot(FindObjectOfType<MasterNetAdapter>().gameObject);
 			NetAdapterTools.RemoveUnusedNetworkManager();
 			NetAdapterTools.TryToAddDependenciesEverywhere();
+#if MIRROR || !UNITY_2019_1_OR_NEWER
 			NetAdapterTools.GetNetworkManager(true);
+#endif
 			NetAdapterTools.CopyPlayerPrefabFromPUNtoOthers();
 			NetAdapterTools.EnsureNMPlayerPrefabIsLocalAuthority();
 			NetAdapterTools.EnsureSceneNetLibDependencies(false);
@@ -114,6 +118,9 @@ namespace emotitron.NST
 			/// If enough network lib specific things show up here, I may need to make a new start adapter for network
 			/// but for not, just keeping this here.
 			// Ensure that UNET is sending our packet immediately.
+
+#if MIRROR || !UNITY_2019_1_OR_NEWER
+
 			if (MasterNetAdapter.NetworkLibrary == NetworkLibrary.UNET)
 			{
 				// this is here so we can access the NM out of play mode
@@ -125,6 +132,7 @@ namespace emotitron.NST
 					NetworkManager.singleton.connectionConfig.SendDelay = 0;
 #endif
 			}
+#endif
 
 			// Not ideal code to prevent hitching issues with vsync being off - ensures a reasonable framerate is being enforced
 			if (QualitySettings.vSyncCount == 0)
@@ -225,3 +233,6 @@ namespace emotitron.NST
 }
 
 #pragma warning restore CS0618 // UNET obsolete
+
+
+#endif

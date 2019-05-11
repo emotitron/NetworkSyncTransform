@@ -1,5 +1,7 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
 using UnityEngine;
 using System.Collections.Generic;
 using emotitron.Utilities.GUIUtilities;
@@ -35,3 +37,5 @@ namespace emotitron.NST
 	}
 #endif
 }
+
+#endif

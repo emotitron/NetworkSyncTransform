@@ -13,7 +13,7 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 #elif MIRROR
 using Mirror;
-#else
+#elif !UNITY_2019_1_OR_NEWER
 using UnityEngine.Networking;
 #endif
 
@@ -74,7 +74,7 @@ namespace emotitron.Utilities.Networking
 			PhotonNetwork.NetworkingClient.OpRaiseEvent(msgId, streambytes, opts[(int)rcvGrp], sendOpts);
 			PhotonNetwork.NetworkingClient.Service();
 		}
-#else
+#elif MIRROR || !UNITY_2019_1_OR_NEWER
 
 		public static bool ReadyToSend { get { return NetworkServer.active || ClientScene.readyConnection != null; } }
 		public static bool AmActiveServer { get { return NetworkServer.active; } }
@@ -129,12 +129,17 @@ namespace emotitron.Utilities.Networking
 			}
 			else if (rcvGrp == ReceiveGroup.Master)
 			{
-				if (ClientScene.readyConnection != null)
+				var conn = ClientScene.readyConnection;
+				if (conn != null)
+				{
 #if MIRROR
-					ClientScene.readyConnection.Send<BytesMessageNonalloc>(msg, channel);
+					conn.Send<BytesMessageNonalloc>(msg, channel);
 #else
-					ClientScene.readyConnection.SendByChannel(msgId, msg, channel);
+					conn.SendByChannel(msgId, msg, channel);
+					conn.FlushChannels();
 #endif
+				}
+
 			}
 			/// Send To Others
 			else
@@ -142,24 +147,27 @@ namespace emotitron.Utilities.Networking
 				if (NetworkServer.active)
 				{
 #if MIRROR
-					foreach (NetworkConnection nc in NetworkServer.connections.Values)
+					foreach (NetworkConnection conn in NetworkServer.connections.Values)
 #else
-					foreach (NetworkConnection nc in NetworkServer.connections)
+					foreach (NetworkConnection conn in NetworkServer.connections)
 #endif
 					{
-						if (nc == null)
+						if (conn == null)
 							continue;
 
 						/// Don't send to self if Host
-						if (nc.connectionId == 0)
+						if (conn.connectionId == 0)
 							continue;
 
-						if (nc.isReady)
+						if (conn.isReady)
+						{
 #if MIRROR
-							nc.Send<BytesMessageNonalloc>(msg, channel);
+							conn.Send<BytesMessageNonalloc>(msg, channel);
 #else
-							nc.SendByChannel(msgId, msg, channel);
+							conn.SendByChannel(msgId, msg, channel);
+							conn.FlushChannels();
 #endif
+						}
 					}
 				}
 
@@ -170,11 +178,42 @@ namespace emotitron.Utilities.Networking
 					ClientScene.readyConnection.Send<BytesMessageNonalloc>(msg, channel);
 #else
 					ClientScene.readyConnection.SendByChannel(msgId, msg, channel);
+					ClientScene.readyConnection.FlushChannels();
+
 #endif
 				}
 			}
 
-			//nc.FlushChannels();
+		}
+
+		public static void SendToConn(this byte[] buffer, int bitcount, short msgId, object targConn, int targConnId, ReceiveGroup rcvGrp, int channel = Channels.DefaultUnreliable)
+		{
+			bytesmsg.buffer = buffer;
+			bytesmsg.length = (ushort)((bitcount + 7) >> 3);
+			SendToConn(bytesmsg, msgId, targConn, targConnId, rcvGrp, channel);
+		}
+
+		public static void SendToConn(BytesMessageNonalloc msg, short msgId, object targConn, int targConnId, ReceiveGroup rcvGrp, int channel = Channels.DefaultUnreliable)
+		{
+			{
+				if (NetworkServer.active)
+				{
+					NetworkConnection conn = (targConn as NetworkConnection);
+
+					if (conn == null)
+						return;
+
+					if (conn.isReady)
+					{
+#if MIRROR
+						conn.Send<BytesMessageNonalloc>(msg, channel);
+#else
+						conn.SendByChannel(msgId, msg, channel);
+						conn.FlushChannels();
+#endif
+					}
+				}
+			}
 		}
 
 

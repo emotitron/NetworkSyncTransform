@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
+using UnityEngine;
 using emotitron.NST;
 
 #if PUN_2_OR_NEWER
@@ -61,10 +63,10 @@ public class SpawnObject : NSTMasterBehaviour, IOnConnect, IOnJoinRoom
 			//}
 			//else
 			//{
-				NSTNetAdapter.AddAsRegisteredPrefab(prefab, false, false);
-			//}
+			NSTNetAdapter.AddAsRegisteredPrefab(prefab, false, false);
+		//}
 	}
-	
+
 #endif
 
 	// Callback used by UNET
@@ -116,3 +118,6 @@ public class SpawnObject : NSTMasterBehaviour, IOnConnect, IOnJoinRoom
 
 }
 #pragma warning restore CS0618 // UNET obsolete
+
+
+#endif

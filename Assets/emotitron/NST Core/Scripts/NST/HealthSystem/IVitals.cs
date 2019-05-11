@@ -1,5 +1,7 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
 using System.Collections.Generic;
 
 namespace emotitron.NST.HealthSystem
@@ -21,4 +23,6 @@ namespace emotitron.NST.HealthSystem
 		Vital this[int vitalType] { get; }
 	}
 }
+
+#endif
 	

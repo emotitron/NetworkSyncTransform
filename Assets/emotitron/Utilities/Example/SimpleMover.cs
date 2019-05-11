@@ -9,10 +9,12 @@ using Mirror;
 using UnityEngine.Networking;
 #endif
 
-#pragma warning disable CS0618 // UNET obsolete
-
 namespace emotitron.Utilities.Example
 {
+
+#pragma warning disable CS0618 // UNET obsolete
+
+
 	/// <summary>
 	/// Basic automatic transform mover for objects for network testing. Will only run if object has local authority.
 	/// </summary>
@@ -21,9 +23,8 @@ namespace emotitron.Utilities.Example
 
 #if PUN_2_OR_NEWER
 		private PhotonView pv;
-#else
+#elif !UNITY_2019_1_OR_NEWER || MIRROR
 		private NetworkIdentity ni;
-		private UnityEngine.Networking.NetworkIdentity unetNI;
 #endif
 
 		private TransformCrusher tc;
@@ -53,9 +54,8 @@ namespace emotitron.Utilities.Example
 		{
 #if PUN_2_OR_NEWER
 			pv = transform.root.GetComponent<Photon.Pun.PhotonView>();
-#else
+#elif !UNITY_2019_1_OR_NEWER || MIRROR
 			ni = transform.root.GetComponent<NetworkIdentity>();
-			unetNI = transform.root.GetComponent<UnityEngine.Networking.NetworkIdentity>();
 #endif
 			var itc = transform.root.GetComponent<IHasTransformCrusher>();
 
@@ -75,10 +75,8 @@ namespace emotitron.Utilities.Example
 #if PUN_2_OR_NEWER
 			if (pv && !pv.IsMine)
 				return;
-#else
+#elif !UNITY_2019_1_OR_NEWER || MIRROR
 			if (ni && !ni.hasAuthority)
-				return;
-			else if (unetNI && !unetNI.hasAuthority)
 				return;
 #endif
 			if (oscillate)
@@ -136,6 +134,7 @@ namespace emotitron.Utilities.Example
 			}
 		}
 	}
+
 }
 
 #pragma warning restore CS0618 // UNET obsolete

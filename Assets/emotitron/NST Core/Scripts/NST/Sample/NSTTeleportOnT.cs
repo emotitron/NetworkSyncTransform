@@ -1,4 +1,6 @@
-﻿using emotitron.Compression;
+﻿#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
+using emotitron.Compression;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,5 +33,7 @@ namespace emotitron.NST
 		}
 	}
 }
+
+#endif
 
 

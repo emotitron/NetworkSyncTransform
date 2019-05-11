@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
+using UnityEngine;
 using emotitron.NST;
 
 /// <summary>
@@ -20,3 +22,5 @@ public class Rotator : NSTComponent, INstPostUpdate
 		}
 	}
 }
+
+#endif

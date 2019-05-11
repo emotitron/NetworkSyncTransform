@@ -1,5 +1,8 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
+
 #if UNITY_EDITOR
 
 using UnityEngine;
@@ -62,5 +65,7 @@ namespace emotitron.NST
 
 	}
 }
+
+#endif
 
 #endif

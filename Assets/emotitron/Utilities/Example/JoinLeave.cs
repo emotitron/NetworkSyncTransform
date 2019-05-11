@@ -6,7 +6,7 @@ using UnityEngine;
 // using Photon.Pun;
 #elif MIRROR
 using Mirror;
-#else
+#elif !UNITY_2019_1_OR_NEWER
 using UnityEngine.Networking;
 #endif
 
@@ -29,7 +29,9 @@ public class JoinLeave : MonoBehaviour
 
 		if (Input.GetKeyDown(leave))
 			ClientScene.RemovePlayer();
-#else
+
+#elif !UNITY_2019_1_OR_NEWER
+
 		if (Input.GetKeyDown(join))
 			ClientScene.AddPlayer(0);
 

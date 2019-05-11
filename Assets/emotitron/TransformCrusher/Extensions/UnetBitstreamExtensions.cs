@@ -1,11 +1,12 @@
 ﻿#if MIRROR
 using Mirror;
-#else
+#elif !UNITY_2019_1_OR_NEWER
 using UnityEngine.Networking;
 #endif
 
 namespace emotitron.Compression
 {
+#if !UNITY_2019_1_OR_NEWER
 
 	public static class UnetBitstreamExtensions
 	{
@@ -116,5 +117,6 @@ namespace emotitron.Compression
 #pragma warning restore 0618
 
 	}
+#endif
 }
 

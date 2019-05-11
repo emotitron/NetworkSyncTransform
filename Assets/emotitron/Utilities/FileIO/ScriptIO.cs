@@ -33,7 +33,7 @@ namespace emotitron.Utilities.FileIO
 			}
 			catch (IOException IOEx)
 			{
-				emotitron.Debugging.XDebug.Log(!emotitron.Debugging.XDebug.logInfo ? null : ("CS File locked at the moment." + IOEx));
+				Debugging.XDebug.Log(!Debugging.XDebug.logInfo ? null : ("CS File locked at the moment." + IOEx));
 				return null;
 			}
 		}

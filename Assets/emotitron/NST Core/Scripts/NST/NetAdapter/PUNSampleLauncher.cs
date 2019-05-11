@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
+using UnityEngine;
 using emotitron.Debugging;
 
 #if PUN_2_OR_NEWER
@@ -87,17 +90,21 @@ namespace emotitron.NST
 				return;
 			}
 
+#if MIRROR || !UNITY_2019_1_OR_NEWER
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
 			// Destroy any UNET stuff in the scene if we aren't running unet.
 			if (MasterNetAdapter.NetLib != NetworkLibrary.UNET)
 			{
-				NetworkManagerHUD nmh = GetComponent<NetworkManagerHUD>();
+				NetworkManagerHUD nmh = FindObjectOfType<NetworkManagerHUD>();
 				if (nmh)
 					Destroy(nmh);
 
-				NetworkManager nm = GetComponent<NetworkManager>();
+				NetworkManager nm = FindObjectOfType<NetworkManager>();
 				if (nm)
 					Destroy(nm);
 			}
+#endif
+#endif
 			// we don't join the lobby. There is no need to join a lobby to get the list of rooms.
 			//MasterNetAdapter.PUN_AutoJoinLobby = false;
 
@@ -137,7 +144,7 @@ namespace emotitron.NST
 			if (autoSpawnPlayer)
 				SpawnLocalPlayer();
 			else
-				Debug.Log("<b>Auto-Create for player is disabled on component '" + this.GetType().Name + "'</b>. Press '" + spawnPlayerKey + "' to spawn a player. '" + unspawnPlayerKey +"' to unspawn.");
+				Debug.Log("<b>Auto-Create for player is disabled on component '" + this.GetType().Name + "'</b>. Press '" + spawnPlayerKey + "' to spawn a player. '" + unspawnPlayerKey + "' to unspawn.");
 		}
 
 		public void OnJoinRoomFailed()
@@ -189,7 +196,7 @@ namespace emotitron.NST
 				}
 				else
 					Debug.LogError("No PlayerPrefab defined in " + this.GetType().Name);
-				
+
 			}
 		}
 
@@ -225,3 +232,6 @@ namespace emotitron.NST
 
 }
 #pragma warning restore CS0618 // UNET obsolete
+
+
+#endif

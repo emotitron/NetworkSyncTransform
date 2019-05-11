@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
 namespace emotitron.NST
 {
 
@@ -140,7 +142,7 @@ namespace emotitron.NST
 				/// Client processing other client object
 				else
 				{
-					sourceToLocalOffset = (currentLocalFrameId /*+ FRAME_BUFFER_CNT*/) - ( serverframeid + FRAME_BUFFER_CNT) ;
+					sourceToLocalOffset = (currentLocalFrameId /*+ FRAME_BUFFER_CNT*/) - (serverframeid + FRAME_BUFFER_CNT);
 					//Debug.LogWarning("OFFSET = " + sourceToLocalOffset + " svrFrm " + serverframeid + " currFr: " + currentLocalFrameId);
 				}
 			}
@@ -190,7 +192,7 @@ namespace emotitron.NST
 
 			activePlayerIds.Add(clientId);
 			playerValidMask.Add(clientId, 0);
-			playerSrcToLclFrameOffset.Add(clientId,  sourceToLocalOffset);
+			playerSrcToLclFrameOffset.Add(clientId, sourceToLocalOffset);
 			avgOffset.Add(clientId, sourceToLocalOffset);
 
 			///// Make sure the offset is positive
@@ -243,3 +245,5 @@ namespace emotitron.NST
 
 
 }
+
+#endif

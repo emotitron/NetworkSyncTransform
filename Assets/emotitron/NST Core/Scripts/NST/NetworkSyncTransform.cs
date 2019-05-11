@@ -1,5 +1,7 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
 using System;
 using UnityEngine;
 using System.Collections.Generic;
@@ -73,7 +75,7 @@ namespace emotitron.NST
 		private void SetStateAlive() { State = State.Alive; }
 		private void SetStateDead() { State = State.Dead; }
 
-		#region Lagged Actions
+#region Lagged Actions
 
 		//private struct LaggedAction
 		//{
@@ -102,9 +104,9 @@ namespace emotitron.NST
 		//	Debug.Log("Que action " + action + " by " + delay + " secs");
 		//}
 
-		#endregion
+#endregion
 
-		#region Inspector Vars
+#region Inspector Vars
 
 		[Range(1, 6)]
 		[Tooltip("1 is the default. 1 sends updates every Network Tick (set in NSTSettings). 3 every 3rd.")]
@@ -176,9 +178,9 @@ namespace emotitron.NST
 		[SerializeField]
 		public bool destroyUnspawned = true; 
 
-		#endregion
+#endregion
 
-		#region NstId Syncvar and methods
+#region NstId Syncvar and methods
 
 		// The network ID actually is synced using the network adaptor, since that is network library dependent.
 		public uint NstId
@@ -203,9 +205,9 @@ namespace emotitron.NST
 		[NonSerialized]
 		public int frameCount;
 
-		#endregion
+#endregion
 
-		#region Callback Interfaces
+#region Callback Interfaces
 
 		[HideInInspector] public List<INstAwake> iNstAwake = new List<INstAwake>();
 
@@ -242,9 +244,9 @@ namespace emotitron.NST
 		[HideInInspector] public List<INstOnTeleportApply> iNstOnTeleportApply = new List<INstOnTeleportApply>();
 		[HideInInspector] public List<INstOnFirstAppliedFrameZero> iNstOnFirstAppliedFrameZero = new List<INstOnFirstAppliedFrameZero>();
 
-		#endregion
+#endregion
 
-		#region Startup and Initialization
+#region Startup and Initialization
 
 		// Cached Components
 		[HideInInspector] public Rigidbody rb;
@@ -470,9 +472,9 @@ namespace emotitron.NST
 			Destroy(ghostGO);
 		}
 
-		#endregion
+#endregion
 
-		#region Updates
+#region Updates
 
 		/// <summary>
 		/// NST does its Update() work on the MasterNSTUpdate() timing, but we still offer NST's Update as a basic update manager
@@ -549,10 +551,10 @@ namespace emotitron.NST
 			return false;
 		}
 
-		#endregion
+#endregion
 
 
-		#region Interpolation
+#region Interpolation
 
 		public FrameBuffer buffer;
 
@@ -748,9 +750,9 @@ namespace emotitron.NST
 				cb.OnInterpolate(t);
 		}
 
-		#endregion
+#endregion
 
-		#region Custom Events
+#region Custom Events
 
 		private Queue<byte[]> customEventQueue = new Queue<byte[]>();
 		
@@ -775,10 +777,10 @@ namespace emotitron.NST
 			customEventQueue.Enqueue(userData.SerializeToByteArray());
 		}
 
-		#endregion
+#endregion
 
 
-		#region Teleport
+#region Teleport
 
 		private bool svrWaitingForOwnerTeleportConfirm; // a teleport has occurred, next outgoing packet needs to indicate that.
 		private bool ownrNeedsToSendTeleportConfirm;
@@ -872,9 +874,9 @@ namespace emotitron.NST
 			return true;
 		}
 
-		#endregion
+#endregion
 
-		#region Message Transmission
+#region Message Transmission
 
 		public void OnGenerateUpdateType(Frame frame, ref UdpBitStream bitstream, ref bool forceKey)
 		{
@@ -1105,9 +1107,9 @@ namespace emotitron.NST
 			DebugWidget.Move(gameObject, frame.rootPos, frame.RootRot, (int)debugXform, (int)DebugXform.LocalSend);
 		}
 
-		#endregion
+#endregion
 
-		#region Message Reception
+#region Message Reception
 
 
 		private const int TEST_BITS_SIZE = 32;
@@ -1367,6 +1369,8 @@ namespace emotitron.NST
 			buffer.FlagFrameAsValid(frame);
 			return frame;
 		}
-		#endregion
+#endregion
 	}
 }
+
+#endif

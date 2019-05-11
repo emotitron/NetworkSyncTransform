@@ -24,7 +24,7 @@ namespace emotitron.Utilities.Networking
 	/// <summary>
 	/// Component that will replace NetworkManager, NetworkManagerHUD and NetworkIdentity with mirror version at runtime.
 	/// </summary>
-#if MIRROR && UNITY_2018_3_OR_NEWER && UNITY_EDITOR
+#if MIRROR && UNITY_2018_3_OR_NEWER && UNITY_EDITOR && !UNITY_2019_1_OR_NEWER
 
 	//[ExecuteInEditMode]
 	public class MirrorCheck : MonoBehaviour/*, UnityEditor.Build.IPreprocessBuildWithReport*/
@@ -324,7 +324,7 @@ namespace emotitron.Utilities.Networking
 	}
 
 	/// Build handling for mirror... removes UNET parts
-#elif MIRROR
+#elif MIRROR && !UNITY_2019_1_OR_NEWER
 
 	public class MirrorCheck : MonoBehaviour 
 	{

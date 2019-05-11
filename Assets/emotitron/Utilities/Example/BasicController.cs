@@ -20,18 +20,18 @@ using UnityEditor;
 namespace emotitron.Utilities.Example
 {
 
-
 	/// <summary>
 	/// A VERY basic player movement and position/rotation sync example using UNET.
 	/// </summary>
 	public class BasicController : MonoBehaviour
 	{
+
 #if PUN_2_OR_NEWER
 		private PhotonView pv;
-#else
+#elif !UNITY_2019_1_OR_NEWER || MIRROR
 		private NetworkIdentity ni;
-		private UnityEngine.Networking.NetworkIdentity unetNI;
 #endif
+
 		private Rigidbody rb;
 #if !DISABLE_PHYSICS_2D
 		private Rigidbody2D rb2D;
@@ -84,9 +84,8 @@ namespace emotitron.Utilities.Example
 
 #if PUN_2_OR_NEWER
 			pv = GetComponent<PhotonView>();
-#else
+#elif !UNITY_2019_1_OR_NEWER || MIRROR
 			ni = GetComponent<NetworkIdentity>();
-			unetNI = GetComponent<UnityEngine.Networking.NetworkIdentity>();
 #endif
 
 		}
@@ -98,15 +97,12 @@ namespace emotitron.Utilities.Example
 
 #if PUN_2_OR_NEWER
 			return (pv == null || pv.IsMine);
-#else
+#elif !UNITY_2019_1_OR_NEWER || MIRROR
 
 				if (ni != null)
 					return ni.hasAuthority;
-				else if (unetNI != null)
-					return unetNI.hasAuthority;
-
-				return true;
 #endif
+				return true;
 			}
 		}
 
@@ -312,6 +308,7 @@ namespace emotitron.Utilities.Example
 	}
 
 #endif
+
 }
 
 #pragma warning restore CS0618 // UNET obsolete

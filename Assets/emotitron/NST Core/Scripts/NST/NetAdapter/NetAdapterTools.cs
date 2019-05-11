@@ -1,5 +1,7 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
 using UnityEngine;
 using emotitron.Utilities;
 using emotitron.Utilities.GUIUtilities;
@@ -9,7 +11,7 @@ using emotitron.Debugging;
 
 #if MIRROR
 using Mirror;
-#else
+#elif !UNITY_2019_1_OR_NEWER
 using UnityEngine.Networking;
 #endif
 
@@ -72,11 +74,14 @@ namespace emotitron.NST
 			// If a post-recompile rebuild of dependencies is pending... do it now.
 			TryToAddDependenciesEverywhere();
 
+#if MIRROR || !UNITY_2019_1_OR_NEWER
+
 			if (MasterNetAdapter.NetLib == NetworkLibrary.UNET)
 			{
 				GetNetworkManager(true);
 				CopyPlayerPrefab();
 			}
+#endif
 
 			//if (NetLibrarySettings.Single.AutoAddNSTMaster)
 			//	NSTMaster.EnsureExistsInScene(NSTMaster.DEFAULT_GO_NAME);
@@ -489,11 +494,14 @@ namespace emotitron.NST
 			Resources.UnloadUnusedAssets();
 		}
 
+		//#if MIRROR || !UNITY_2019_1_OR_NEWER
+
 		public static void RemovedUnusedNetworkIdentity(GameObject go)
 		{
 			// Double check to make sure NI doesn't exist if UNET isn't being used. It disables the object and will break other libs.
 			if (MasterNetAdapter.NetLib != NetworkLibrary.UNET)
 			{
+#if MIRROR || !UNITY_2019_1_OR_NEWER
 				NetworkIdentity ni = go.GetComponent<NetworkIdentity>();
 
 				if (ni)
@@ -501,9 +509,12 @@ namespace emotitron.NST
 					try { Object.DestroyImmediate(ni); }
 					catch { try { Object.Destroy(ni); } catch { } }
 				}
+#endif
 			}
 
 		}
+
+#if MIRROR || !UNITY_2019_1_OR_NEWER
 
 		public static NetworkManager GetNetworkManager(bool createMissing = false)
 		{
@@ -564,6 +575,7 @@ namespace emotitron.NST
 
 			return NetworkManager.singleton;
 		}
+#endif
 
 		public static void CopyPlayerPrefab()
 		{
@@ -574,42 +586,14 @@ namespace emotitron.NST
 		// TODO this is redudant with NSTNetAdapter code for UNET
 		public static void CopyPlayerPrefabFromPUNtoOthers()
 		{
-
 			PUNSampleLauncher punl = PUNSampleLauncher.Single;
 			if (!punl || punl.playerPrefab == null)
 				return;
 
 			NSTNetAdapter.AddAsRegisteredPrefab(punl.playerPrefab, true);
-
-			//// Copy player prefab from PUN launcher to NM
-			//if (MasterNetAdapter.NetLib == NetworkLibrary.UNET)
-			//	NSTNetAdapter.AddAsRegisteredPrefab(punl.playerPrefab, true);
-
-			//// Copy PUN playerPrefab to UNET
-			//NetworkManager nm = GetNetworkManager(MasterNetAdapter.NetLib == NetworkLibrary.UNET);
-			//if (nm && !nm.playerPrefab)
-			//{
-			//	Debug.Log("Copying Player Prefab : <b>'" + punl.playerPrefab.name + "'</b> from " + punl.GetType().Name + " to NetworkManager for you.");
-
-			//	NetworkIdentity ni = punl.playerPrefab.GetComponent<NetworkIdentity>();
-			//	if (!ni)
-			//		ni = punl.playerPrefab.AddComponent<NetworkIdentity>();
-
-			//	// This seemingly pointless code forces the NI to initialize the assetid. For some dumb reason UNET.
-			//	ni.assetId.IsValid();
-
-			//	if (nm.playerPrefab != punl.playerPrefab)
-			//	{
-			//		nm.playerPrefab = punl.playerPrefab;
-			//		EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-			//	}
-			//}
 		}
 
-		public static void EnsureNMPlayerPrefabIsLocalAuthority()
-		{
-			EnsureNMPlayerPrefabIsLocalAuthority(GetNetworkManager());
-		}
+#if MIRROR || !UNITY_2019_1_OR_NEWER
 
 		public static void EnsureNMPlayerPrefabIsLocalAuthority(NetworkManager nm)
 		{
@@ -625,8 +609,12 @@ namespace emotitron.NST
 			}
 		}
 
+#endif
+
 		public static void CopyPlayerPrefabFromUNETtoOthers()
 		{
+#if MIRROR || !UNITY_2019_1_OR_NEWER
+
 			NetworkManager nm = GetNetworkManager();
 			if (!nm || nm.playerPrefab == null)
 				return;
@@ -638,7 +626,33 @@ namespace emotitron.NST
 				Debug.Log("Copying Player Prefab : <b>'" + nm.playerPrefab.name + "'</b> from NetworkManager to " + punl.GetType().Name + " for you.");
 				punl.playerPrefab = nm.playerPrefab;
 			}
+#endif
 		}
+
+
+		public static void RemoveUnusedNetworkManager()
+		{
+#if MIRROR || !UNITY_2019_1_OR_NEWER
+
+			if (MasterNetAdapter.NetLib != NetworkLibrary.UNET)
+			{
+				RemoveComponentTypeFromScene<NetworkManager>(true);
+			}
+#endif
+		}
+
+		public static void EnsureNMPlayerPrefabIsLocalAuthority()
+		{
+#if MIRROR || !UNITY_2019_1_OR_NEWER
+
+			EnsureNMPlayerPrefabIsLocalAuthority(GetNetworkManager());
+#endif
+		}
+
+
+		//#endif // END UNET/MIRROR Exist check
+
+
 
 		//public static NetworkManager EnsureNetworkManagerExists()
 		//{
@@ -677,13 +691,6 @@ namespace emotitron.NST
 		//	return NetworkManager.singleton;
 		//}
 
-		public static void RemoveUnusedNetworkManager()
-		{
-			if (MasterNetAdapter.NetLib != NetworkLibrary.UNET)
-			{
-				RemoveComponentTypeFromScene<NetworkManager>(true);
-			}
-		}
 
 		///// <summary>
 		///// Checks to see if there is a NetworkManager, and if so, checks to make sure the assigned playerprefab has its ni set to localplayerauthority.
@@ -706,3 +713,6 @@ namespace emotitron.NST
 }
 
 #pragma warning restore CS0618 // UNET obsolete
+
+
+#endif // End NETLIB exist check

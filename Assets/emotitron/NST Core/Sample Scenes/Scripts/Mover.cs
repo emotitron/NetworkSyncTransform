@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿
+#if PUN_2_OR_NEWER || MIRROR || !UNITY_2019_1_OR_NEWER
+
+using UnityEngine;
 using emotitron.NST;
 using emotitron.Utilities.GUIUtilities;
 
@@ -115,3 +118,5 @@ public class Mover : NSTComponent , /*INstStart,*/ INstPreUpdate
 	}
 
 }
+
+#endif

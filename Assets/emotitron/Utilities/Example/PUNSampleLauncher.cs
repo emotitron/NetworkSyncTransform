@@ -131,7 +131,7 @@ namespace emotitron.Utilities.Example
 
 			if (playerPrefab)
 			{
-				var pv = playerPrefab.GetComponent<PhotonView>();
+				PhotonView pv = playerPrefab.GetComponent<PhotonView>();
 				if (pv == null)
 					AddPhotonView(playerPrefab);
 
