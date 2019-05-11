@@ -116,7 +116,6 @@ namespace emotitron.Utilities.Networking
 		/// </summary>
 		public static void Send(BytesMessageNonalloc msg, short msgId, ReceiveGroup rcvGrp, int channel = Channels.DefaultUnreliable)
 		{
-
 			/// Server send to all. Owner client send to server.
 			if (rcvGrp == ReceiveGroup.All)
 			{

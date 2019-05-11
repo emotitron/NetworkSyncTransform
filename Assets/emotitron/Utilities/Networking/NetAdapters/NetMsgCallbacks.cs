@@ -40,13 +40,16 @@ namespace emotitron.Utilities.Networking
 
 		public override void Serialize(NetworkWriter writer)
 		{
+#if MIRROR
 			writer.Write(buffer, 0, length);
+#else
+			writer.Write(buffer, writer.Position, length);
+#endif
 		}
 
 		public override void Deserialize(NetworkReader reader)
 		{
 			length = (ushort)(reader.Length - reader.Position);
-			reader.ReadBytes(length);
 			for (int i = 0; i < length; i++)
 				incomingbuffer[i] = reader.ReadByte();
 		}
@@ -299,7 +302,7 @@ namespace emotitron.Utilities.Networking
 #if MIRROR
 				NetworkClient.UnregisterHandler((short)msgId);
 #else
-						if (NetworkManager.singleton.client != null)
+			if (NetworkManager.singleton.client != null)
 				NetworkManager.singleton.client.UnregisterHandler((short)msgId);
 #endif
 		}

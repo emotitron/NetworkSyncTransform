@@ -34,9 +34,9 @@ namespace emotitron.Utilities.Networking
 		{
 			/// Remove the UNET NetIdentity if it exists on this object.
 			var ni = GetComponent<UnityEngine.Networking.NetworkIdentity>();
-
 			if (ni)
 			{
+				AddMirrorNetManager();
 				DestroyImmediate(ni);
 				return;
 			}
@@ -73,7 +73,6 @@ namespace emotitron.Utilities.Networking
 			if (!scene.name.Contains("Example") && !scene.name.Contains("Sample"))
 				return;
 
-			Debug.Log("<b>Opening Scene</b> " + scene.name); //  // path);
 			//if (_mode == UnityEditor.SceneManagement.OpenSceneMode.)
 			// get root objects in scene
 			List<GameObject> rootObjects = new List<GameObject>();
@@ -83,7 +82,7 @@ namespace emotitron.Utilities.Networking
 			/// Need to make sure all NetIds have been converted before converting NM
 			if (!mirrorNetIdAlreadyAddedToResources)
 			{
-				Debug.Log("MirrorNetId being added to all resources");
+				Debug.Log("Mirror NetId being added to all resources that have UNET NetId");
 				AddMirrorNetIdToResources();
 				mirrorNetIdAlreadyAddedToResources = true;
 			}
@@ -96,7 +95,6 @@ namespace emotitron.Utilities.Networking
 				{
 					if (mc)
 					{
-						Debug.Log("Found MC on " + go.name);
 						mc.AddMirrorNetManager();
 					}
 				}
@@ -105,14 +103,12 @@ namespace emotitron.Utilities.Networking
 
 		public static void AddMirrorNetIdToResources()
 		{
-			Debug.Log("LoadAllREsources !!!!");
 			// Option for stripping all prefabs in all resource folders of NI
 			var objs = Resources.LoadAll<MirrorCheck>("");
 
 			// MirrorCheck on objects in resource folders should be prefabs. Replace NI on all of those.
 			for (int i = 0; i < objs.Length; i++)
 			{
-				Debug.Log("<b>Replacing NI on </b>" + objs[i].gameObject.name);
 				AddMirrorNetowrkIdentity(objs[i].gameObject);
 			}
 
@@ -130,6 +126,7 @@ namespace emotitron.Utilities.Networking
 				Debug.Log("<b>Replacing NI on </b>" + objs[i].gameObject.name);
 				RemoveUNetNetowrkIdentity(objs[i].gameObject);
 			}
+			AssetDatabase.SaveAssets();
 		}
 
 		/// <summary>
@@ -139,13 +136,11 @@ namespace emotitron.Utilities.Networking
 		public Mirror.NetworkManager AddMirrorNetManager()
 		{
 			var unetNM = GetComponent<UnityEngine.Networking.NetworkManager>();
-			Debug.Log("unet nm? " + gameObject.name + " " + (unetNM != null));
 
 			if (unetNM == null)
 				return null;
 
 			var mirrorNM = GetComponent<Mirror.NetworkManager>();
-			Debug.Log("mirror nm? " + gameObject.name + " " + (mirrorNM != null));
 
 			if (mirrorNM)
 				return mirrorNM;
@@ -245,14 +240,6 @@ namespace emotitron.Utilities.Networking
 			if (mirrorNI)
 				return;
 
-
-			///// TEST
-			//mirrorNI = prefab.AddComponent<Mirror.NetworkIdentity>();
-			//mirrorNI.localPlayerAuthority = unetNI.localPlayerAuthority;
-			//mirrorNI.serverOnly = unetNI.serverOnly;
-			//return;
-
-
 			if (PrefabUtility.IsPartOfPrefabAsset(prefab))
 			{
 				var path = AssetDatabase.GetAssetPath(prefab);
@@ -266,8 +253,6 @@ namespace emotitron.Utilities.Networking
 				try
 				{
 					mirrorNI = prefabRoot.AddComponent<Mirror.NetworkIdentity>();
-					Debug.Log("Trying " + prefab.name + " " + (mirrorNI != null));
-
 					mirrorNI.localPlayerAuthority = unetNI.localPlayerAuthority;
 					mirrorNI.serverOnly = unetNI.serverOnly;
 					PrefabUtility.SaveAsPrefabAssetAndConnect(prefabRoot, path, InteractionMode.UserAction);
@@ -293,7 +278,6 @@ namespace emotitron.Utilities.Networking
 				DestroyImmediate(unetNI, true);
 
 			EditorUtility.SetDirty(prefab);
-			AssetDatabase.SaveAssets();
 		}
 
 		public static void CopyPlayerPrefab(UnityEngine.Networking.NetworkManager src, Mirror.NetworkManager targ)
