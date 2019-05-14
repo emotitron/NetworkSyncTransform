@@ -91,11 +91,14 @@ namespace emotitron.Utilities.Networking
 			for (int i = 0; i < rootObjects.Count; ++i)
 			{
 				GameObject go = rootObjects[i];
-				var mc = go.GetComponent<MirrorCheck>();
+				if (go)
 				{
-					if (mc)
+					var mc = go.GetComponent<MirrorCheck>();
 					{
-						mc.AddMirrorNetManager();
+						if (mc)
+						{
+							mc.AddMirrorNetManager();
+						}
 					}
 				}
 			}
@@ -255,7 +258,8 @@ namespace emotitron.Utilities.Networking
 					mirrorNI = prefabRoot.AddComponent<Mirror.NetworkIdentity>();
 					mirrorNI.localPlayerAuthority = unetNI.localPlayerAuthority;
 					mirrorNI.serverOnly = unetNI.serverOnly;
-					PrefabUtility.SaveAsPrefabAssetAndConnect(prefabRoot, path, InteractionMode.UserAction);
+					//PrefabUtility.SaveAsPrefabAssetAndConnect(prefabRoot, path, InteractionMode.UserAction);
+					PrefabUtility.SaveAsPrefabAsset(prefabRoot, path);
 					//EditorUtility.SetDirty(prefab.gameObject);
 					//AssetDatabase.SaveAssets();
 				}

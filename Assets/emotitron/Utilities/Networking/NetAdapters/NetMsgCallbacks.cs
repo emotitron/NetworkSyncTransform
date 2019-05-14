@@ -32,18 +32,18 @@ namespace emotitron.Utilities.Networking
 	/// </summary>
 	public class BytesMessageNonalloc : MessageBase
 	{
-		public static byte[] incomingbuffer = NetMsgSends.reusableByteArray;
-		public byte[] buffer = NetMsgSends.reusableByteArray;
-		public ushort length;
+		public readonly static byte[] incomingbuffer = NetMsgSends.reusableIncomingBuffer;
+		public static byte[] outgoingbuffer = NetMsgSends.reusableOutgoingBuffer;
+		public static ushort length;
 
 		public BytesMessageNonalloc() { }
 
 		public override void Serialize(NetworkWriter writer)
 		{
 #if MIRROR
-			writer.Write(buffer, 0, length);
+			writer.Write(outgoingbuffer, 0, length);
 #else
-			writer.Write(buffer, writer.Position, length);
+			writer.Write(outgoingbuffer, writer.Position, length);
 #endif
 		}
 
@@ -69,6 +69,7 @@ namespace emotitron.Utilities.Networking
 			public List<ByteBufferCallback> bufferCallbacks;
 		}
 
+		public const byte DEF_MSG_ID = 111;
 
 #if PUN_2_OR_NEWER
 
@@ -124,6 +125,10 @@ namespace emotitron.Utilities.Networking
 				cbs.Add(callback);
 		}
 
+		public static void RegisterCallback(ByteBufferCallback callback)
+		{
+			RegisterCallback(DEF_MSG_ID, callback);
+		}
 		public static void RegisterCallback(byte msgid, ByteBufferCallback callback)
 		{
 			if (!callbacks.ContainsKey(msgid))
@@ -151,6 +156,10 @@ namespace emotitron.Utilities.Networking
 			}
 		}
 
+		public static void UnregisterCallback(ByteBufferCallback callback)
+		{
+			UnregisterCallback(DEF_MSG_ID, callback);
+		}
 		public static void UnregisterCallback(byte msgid, ByteBufferCallback callback)
 		{
 			if (callbacks.ContainsKey(msgid))
@@ -169,7 +178,6 @@ namespace emotitron.Utilities.Networking
 
 #elif MIRROR || !UNITY_2019_1_OR_NEWER  // UNET AND MIRROR
 
-		public const byte DEF_MSG_ID = 111;
 		public static void RegisterDefaultHandler()
 		{
 			RegisterMessageId(DEF_MSG_ID);
@@ -242,7 +250,10 @@ namespace emotitron.Utilities.Networking
 			return true;
 		}
 
-
+		public static void RegisterCallback(ByteBufferCallback callback)
+		{
+			RegisterCallback(DEF_MSG_ID, callback);
+		}
 		public static void RegisterCallback(short msgId, ByteBufferCallback callback)
 		{
 
@@ -320,7 +331,10 @@ namespace emotitron.Utilities.Networking
 #endif
 		}
 
-
+		public static void UnregisterCallback(ByteBufferCallback callback)
+		{
+			UnregisterCallback(DEF_MSG_ID, callback);
+		}
 		public static void UnregisterCallback(short msgId, ByteBufferCallback callback)
 		{
 #if MIRROR
