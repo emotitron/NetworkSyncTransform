@@ -3,7 +3,7 @@
 
 [**NST Free Current Release** - Unity Package Download](https://github.com/emotitron/NetworkSyncTransform/releases)
 
-**With the deprecation of UNET and a LOT of breaking changes currently happening with UNITY 2019, NST likely will NOT be supported on past Unity 2018.4**
+**With the deprecation of UNET and a LOT of breaking changes currently happening with UNITY 2019, NST likely will NOT be officially supported past Unity 2018.4.** Currently it should be working in 2019 for PUN and Mirror, but I make no promises on that for the long-term.
 
 Networking HLAPI for Photon PUN/PUN2 , UNet and Mirror. This asset incorporates a circular buffer based transform sync engine, creating very smooth and stable movement replication - even in lossy/jittery real-world network conditions.
 
