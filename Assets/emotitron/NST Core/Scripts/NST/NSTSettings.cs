@@ -204,13 +204,9 @@ namespace emotitron.NST
 			headerColor = HeaderSettingsColor;
 			base.OnEnable();
 
-
 			NetAdapterTools.TryToAddDependenciesEverywhere();
 			NetAdapterTools.EnsureSceneNetLibDependencies(true);
-
 		}
-
-
 
 		public override void OnInspectorGUI()
 		{

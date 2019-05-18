@@ -815,8 +815,8 @@ namespace emotitron.NST
 	public class BytesMessageNonalloc : MessageBase
 	{
 		public static byte[] incomingbuffer = new byte[2048];
+		public static ushort length;
 		public byte[] buffer;
-		public ushort length;
 
 		public BytesMessageNonalloc()
 		{
@@ -827,10 +827,10 @@ namespace emotitron.NST
 			buffer = nonalloc;
 		}
 
-		public BytesMessageNonalloc(byte[] nonalloc, ushort length)
+		public BytesMessageNonalloc(byte[] nonalloc, ushort _length)
 		{
 			buffer = nonalloc;
-			this.length = length;
+			length = _length;
 		}
 
 		public override void Serialize(NetworkWriter writer)
@@ -1079,7 +1079,7 @@ namespace emotitron.NST
 #if MIRROR_3_0_OR_NEWER
 
 			//if (NetworkServer.handlers.ContainsKey(masterMsgTypeId) && NetworkServer.handlers[masterMsgTypeId] == ReceiveUpdate)
-				NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
+			NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
 #else
 			if (NetworkServer.handlers.ContainsKey(masterMsgTypeId) && NetworkServer.handlers[masterMsgTypeId] == ReceiveUpdate)
 				NetworkServer.UnregisterHandler(HeaderSettings.Single.masterMsgTypeId);
@@ -1166,12 +1166,12 @@ namespace emotitron.NST
 		private static void ReceiveUpdate(NetworkConnection nc, BytesMessageNonalloc msg)
 		{
 
-			UdpBitStream bitstream = new UdpBitStream(BytesMessageNonalloc.incomingbuffer, bytesmsg.length);
+			UdpBitStream bitstream = new UdpBitStream(BytesMessageNonalloc.incomingbuffer, BytesMessageNonalloc.length);
 			UdpBitStream outstream = new UdpBitStream(NSTMaster.outstreamByteArray);
 
 			NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, NetworkServer.active, nc.connectionId);
 
-			outbytemsg.length = (ushort)outstream.BytesUsed;
+			BytesMessageNonalloc.length = (ushort)outstream.BytesUsed;
 
 			// Write a clone message and pass it to all the clients if this is the server receiving
 			if (NetworkServer.active)
@@ -1198,12 +1198,12 @@ namespace emotitron.NST
 		{
 			bytesmsg.Deserialize(msg.reader);
 
-			UdpBitStream bitstream = new UdpBitStream(BytesMessageNonalloc.incomingbuffer, bytesmsg.length);
+			UdpBitStream bitstream = new UdpBitStream(BytesMessageNonalloc.incomingbuffer, BytesMessageNonalloc.length);
 			UdpBitStream outstream = new UdpBitStream(NSTMaster.outstreamByteArray);
 
 			NSTMaster.ReceiveUpdate(ref bitstream, ref outstream, NetworkServer.active, msg.conn.connectionId);
 
-			outbytemsg.length = (ushort)outstream.BytesUsed;
+			BytesMessageNonalloc.length = (ushort)outstream.BytesUsed;
 
 			// Write a clone message and pass it to all the clients if this is the server receiving
 			if (NetworkServer.active)
@@ -1218,7 +1218,7 @@ namespace emotitron.NST
 
 		public static void SendUpdate(ref UdpBitStream bitstream, ref UdpBitStream outstream)
 		{
-			bytesmsg.length = (ushort)bitstream.BytesUsed;
+			BytesMessageNonalloc.length = (ushort)bitstream.BytesUsed;
 
 			// if this is the server - send to all.
 			if (NetworkServer.active)
