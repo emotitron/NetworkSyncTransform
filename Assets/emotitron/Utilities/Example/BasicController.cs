@@ -96,13 +96,14 @@ namespace emotitron.Utilities.Example
 			{
 
 #if PUN_2_OR_NEWER
-			return (pv == null || pv.IsMine);
+				return (pv == null || pv.IsMine);
 #elif !UNITY_2019_1_OR_NEWER || MIRROR
-
 				if (ni != null)
 					return ni.hasAuthority;
-#endif
 				return true;
+#else
+				return true;
+#endif
 			}
 		}
 
