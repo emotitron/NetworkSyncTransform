@@ -354,6 +354,7 @@ namespace emotitron.Compression
 
 			target = (QuatCrusher)DrawerUtils.GetParent(property.FindPropertyRelative("bits"));
 
+
 			line = r.yMin;
 
 			//float standalonesheight = target.isStandalone ? (SPACING + LINEHEIGHT) * 2 : 0;

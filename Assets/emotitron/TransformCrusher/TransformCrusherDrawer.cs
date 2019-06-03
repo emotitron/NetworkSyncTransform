@@ -19,8 +19,10 @@ namespace emotitron.Compression
 		protected float currentline;
 
 		//bool haschanged;
-		private static GUIContent gc = new GUIContent();
-		
+		private static readonly GUIContent gc = new GUIContent();
+		private static readonly GUIContent reusableGC = new GUIContent();
+		private static readonly System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
 		public override void OnGUI(Rect r, SerializedProperty property, GUIContent label)
 		{
 			gc.text = label.text;
@@ -57,7 +59,7 @@ namespace emotitron.Compression
 				property.serializedObject.ApplyModifiedProperties();
 			}
 
-			EditorGUI.LabelField(new Rect(r.xMin, currentline, r.width, TITL_HGHT), gc);// property.displayName /*new GUIContent("Transform Crusher " + label)*//*, (GUIStyle)"BoldLabel"*/);
+			EditorGUI.LabelField(new Rect(r.xMin, currentline, r.width - 64, TITL_HGHT), gc);// property.displayName /*new GUIContent("Transform Crusher " + label)*//*, (GUIStyle)"BoldLabel"*/);
 
 			int totalbits = target.TallyBits();
 			int frag0bits = Mathf.Clamp(totalbits, 0, 64);
@@ -65,16 +67,21 @@ namespace emotitron.Compression
 			int frag2bits = Mathf.Clamp(totalbits - 128, 0, 64);
 			int frag3bits = Mathf.Clamp(totalbits - 192, 0, 64);
 
-			string bitstr = frag0bits.ToString();
-			if (frag1bits > 0)
-				bitstr += "|" + frag1bits;
-			if (frag2bits > 0)
-				bitstr += "|" + frag2bits;
-			if (frag3bits > 0)
-				bitstr += "|" + frag3bits;
+			reusableGC.tooltip = "Total Bits : " + totalbits;
 
-			bitstr = bitstr + " bits";
-			EditorGUI.LabelField(new Rect(paddedleft, currentline, paddedwidth, 16), bitstr, miniLabelRight);
+			sb.Length = 0;
+			sb.Append(frag0bits.ToString());
+			if (frag1bits > 0)
+				sb.Append("|").Append(frag1bits);
+			if (frag2bits > 0)
+				sb.Append("|").Append(frag2bits);
+			if (frag3bits > 0)
+				sb.Append("|").Append(frag3bits);
+
+			sb.Append(" bits");
+			reusableGC.text = sb.ToString();
+
+			EditorGUI.LabelField(new Rect(paddedleft, currentline, paddedwidth, 16), reusableGC, miniLabelRight);
 
 			if (isExpanded.boolValue)
 			{

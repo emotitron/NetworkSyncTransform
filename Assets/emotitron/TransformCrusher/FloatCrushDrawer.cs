@@ -150,7 +150,7 @@ namespace emotitron.Compression
 				DrawCompressionMethod();
 
 				EditorGUI.BeginDisabledGroup(disableRange);
-				if (!noSettings)
+				if (!noSettings && !(fc.TRSType == TRSType.Normal))
 					DrawCodecSettings(property);
 				EditorGUI.EndDisabledGroup();
 
@@ -411,7 +411,6 @@ namespace emotitron.Compression
 			float label1Left = input1Left - labelW;
 			float label2Left = input2Left - labelW;
 
-
 			EditorGUI.LabelField(new Rect(label1Left, line - 2, labelW, LINEHEIGHT), new GUIContent("min: "), miniLabelRight);
 
 			float min = EditorGUI.DelayedFloatField(new Rect(input1Left, line, inputW, LINEHEIGHT), GUIContent.none, fc.Min, (GUIStyle)"MiniTextField");
@@ -618,10 +617,11 @@ namespace emotitron.Compression
 		private float CalculateHeight(FloatCrusher fc)
 		{
 			bool noSettings = (fc.BitsDeterminedBy == BitsDeterminedBy.HalfFloat || fc.BitsDeterminedBy == BitsDeterminedBy.Uncompressed || fc.BitsDeterminedBy == BitsDeterminedBy.Disabled);
+			bool noRange = fc.TRSType == TRSType.Normal;
 
 			float bclLine = (fc.expandBCL) ? BCL_HEIGHT : (fc.showBCL) ? LINEHEIGHT : 0;
 
-			float settingsLen = (noSettings) ? 0 : SETTINGS_HGHT + ACCCNTR_HGHT + ACTUAL_HGHT + bclLine;
+			float settingsLen = (noSettings) ? 0 : (noRange ? 0 : SETTINGS_HGHT) + ACCCNTR_HGHT + ACTUAL_HGHT + bclLine;
 
 			return PADDING + HEADR_HGHT + PADDING +
 				(fc.Enabled ?

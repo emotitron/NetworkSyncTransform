@@ -201,7 +201,7 @@ namespace emotitron.Utilities.Example
 			{
 				//Transform tr = spawnPoints.Count > 0 ? spawnPoints[Random.Range(0, spawnPoints.Count)] : null;
 				Transform tr = emotitron.Utilities.Networking.GenericSpawnPoint.GetSpawnPointFromValue(PhotonNetwork.LocalPlayer.ActorNumber);
-				Vector3 pos = (tr) ? tr.position : Vector3.zero;
+				Vector3 pos = (tr) ? tr.position : new Vector3(PhotonNetwork.LocalPlayer.ActorNumber, 0f, 0f);
 				Quaternion rot = (tr) ? tr.rotation : Quaternion.identity;
 
 				localPlayer = PhotonNetwork.Instantiate(playerPrefab.name, pos, rot, 0);
@@ -230,6 +230,8 @@ namespace emotitron.Utilities.Example
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
+			EditorGUILayout.HelpBox("Convenience handler for launching a very basic Photon PUN2 room. Self-Destroys at runtime if PUN2 is not present.", MessageType.None);
+
 #if PUN_2_OR_NEWER
 			EditorGUILayout.HelpBox("Sample PUN launcher code that creates a PUN room and spawns players.", MessageType.None);
 #else
