@@ -41,16 +41,20 @@ namespace emotitron.Compression
 		public Matrix(TransformCrusher crusher, Transform transform)
 		{
 			this.crusher = crusher;
-			this.position = transform.position;
+
+			bool lclpos = (crusher == null || crusher.PosCrusher == null || crusher.PosCrusher.local);
+			this.position = (lclpos) ? transform.localPosition : transform.position;
 
 			// Not sure the idea option for scale... lossy or local.
-			this.scale = transform.localScale;
+			bool lclscl = (crusher == null || crusher.SclCrusher == null || crusher.SclCrusher.local);
+			this.scale = (lclscl) ? transform.localScale : transform.lossyScale;
 
+			bool lclrot = (crusher == null || crusher.RotCrusher == null || crusher.RotCrusher.local);
 			var rotcrusher = crusher.RotCrusher;
 			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
-				this.rotation = transform.rotation;
+				this.rotation = (lclrot) ? transform.localRotation : transform.rotation;
 			else
-				this.rotation = transform.eulerAngles;
+				this.rotation = (lclrot) ? transform.localEulerAngles : transform.eulerAngles;
 		}
 
 		public void Set(TransformCrusher crusher, Vector3 position, Element rotation, Vector3 scale)
@@ -227,8 +231,9 @@ namespace emotitron.Compression
 				var ydelta = srot.y - erot.y;
 				var zdelta = srot.z - erot.z;
 
+
 				Vector3 unfucked = new Vector3(
-					erot.z,
+					erot.x,
 					ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
 					zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
 					);
@@ -269,7 +274,7 @@ namespace emotitron.Compression
 				var zdelta = srot.z - erot.z;
 
 				Vector3 unfucked = new Vector3(
-					erot.z,
+					erot.x,
 					ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
 					zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
 					);
@@ -302,7 +307,7 @@ namespace emotitron.Compression
 				var zdelta = srot.z - erot.z;
 
 				Vector3 unfucked = new Vector3(
-					erot.z,
+					erot.x,
 					ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
 					zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
 					);
@@ -335,7 +340,7 @@ namespace emotitron.Compression
 				var zdelta = srot.z - erot.z;
 
 				Vector3 unfucked = new Vector3(
-					erot.z,
+					erot.x,
 					ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
 					zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
 					);
