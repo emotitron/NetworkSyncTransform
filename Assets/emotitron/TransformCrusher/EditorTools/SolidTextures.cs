@@ -46,6 +46,7 @@ namespace emotitron.Compression
 		//public static float lowcontrast = .1f ;
 		//public static float highcontrast = .8f ;
 
+#if COLOR_BLIND
 		public static Color lowcontrastgray = new Color(lowcontrast, lowcontrast, lowcontrast);
 		public static Color highcontrastgray = new Color(highcontrast, highcontrast, highcontrast);
 		public static Color gray = EditorGUIUtility.isProSkin ? new Color(dark, dark, dark) : new Color(medi, medi, medi);
@@ -53,14 +54,15 @@ namespace emotitron.Compression
 		public static Color red = EditorGUIUtility.isProSkin ? new Color(lite, dark, medi) : new Color(lite, dark, medi);
 		public static Color green = EditorGUIUtility.isProSkin ? new Color(dark, lite, dark) : new Color(dark, lite, dark);
 		public static Color blue = EditorGUIUtility.isProSkin ? new Color(dark, dark, lite) : new Color(dark, dark, lite);
-
-		//public static Color lowcontrastgray = new Color(lowcontrast, lowcontrast, lowcontrast);
-		//public static Color highcontrastgray = new Color(highcontrast, highcontrast, highcontrast);
-		//public static Color gray = new Color(dark, dark, dark);
-		//public static Color contrastgray = new Color(dark, dark, dark) ;
-		//public static Color red =   new Color(lite, dark, medi) ;
-		//public static Color green = new Color(dark, lite, dark);
-		//public static Color blue =  new Color(dark, dark, lite) ;
+#else
+		public static Color lowcontrastgray = new Color(lowcontrast, lowcontrast, lowcontrast);
+		public static Color highcontrastgray = new Color(highcontrast, highcontrast, highcontrast);
+		public static Color gray = EditorGUIUtility.isProSkin ? new Color(dark, dark, dark) : new Color(medi, medi, medi);
+		public static Color contrastgray = EditorGUIUtility.isProSkin ? new Color(dark, dark, dark) : new Color(lite, lite, lite);
+		public static Color red = EditorGUIUtility.isProSkin ? new Color(medi, dark, dark) : new Color(lite, dark, medi);
+		public static Color green = EditorGUIUtility.isProSkin ? new Color(dark, medi, dark) : new Color(dark, lite, dark);
+		public static Color blue = EditorGUIUtility.isProSkin ? new Color(dark, dark, medi) : new Color(dark, dark, lite);
+#endif
 
 		static SolidTextures()
 		{
