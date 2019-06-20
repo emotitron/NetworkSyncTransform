@@ -7,7 +7,7 @@
 
 **All new development work is going into this library:**
 
-[Simple Network Sync - Unity Asset Store](https://assetstore.unity.com/packages/tools/network/simple-network-sync-134256)
+[**Simple Network Sync** - Unity Asset Store](https://assetstore.unity.com/packages/tools/network/simple-network-sync-134256)
 
 Networking HLAPI for Photon PUN/PUN2 , UNet and Mirror. This asset incorporates a circular buffer based transform sync engine, creating very smooth and stable movement replication - even in lossy/jittery real-world network conditions.
 
