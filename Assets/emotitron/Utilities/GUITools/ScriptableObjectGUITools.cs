@@ -23,9 +23,18 @@ namespace emotitron.Utilities.GUIUtilities
 				return ObjectNames.NicifyVariableName(GetType().Name);
 			}
 		}
-		public virtual string AssetPath { get { return @"Assets/emotitron/Resources/"; } }
+		public virtual string AssetPath
+		{
+			get
+			{
+				var script = MonoScript.FromScriptableObject(this);
+				var path = AssetDatabase.GetAssetPath(script);
+				path = System.IO.Path.GetDirectoryName(path);
+				return path + "/Resources/";
+			}
+		}
 
-		
+
 #endif
 	}
 
@@ -255,12 +264,12 @@ namespace emotitron.Utilities.GUIUtilities
 				//EditorGUILayout.PropertyField(sp);
 			}
 
-			so.ApplyModifiedProperties();
 
 			EditorGUILayout.Space();
 
 			if (EditorGUI.EndChangeCheck())
 			{
+				so.ApplyModifiedProperties();
 				singleton.Initialize();
 				AssetDatabase.SaveAssets();
 			}
