@@ -27,14 +27,14 @@ public struct HitGroupSelector
 
 	//[SerializeField] private float drawerheight;
 
-	public static implicit operator string(HitGroupSelector obj)
-	{
-		return obj.hitGroupTag;
-	}
-	public static implicit operator int(HitGroupSelector obj)
-	{
-		return obj.hitGroupTagId;
-	}
+	//public static implicit operator string(HitGroupSelector obj)
+	//{
+	//	return obj.hitGroupTag;
+	//}
+	//public static implicit operator int(HitGroupSelector obj)
+	//{
+	//	return obj.hitGroupTagId;
+	//}
 
 	public void ValidateSelection(NSTComponent _parent)
 	{
