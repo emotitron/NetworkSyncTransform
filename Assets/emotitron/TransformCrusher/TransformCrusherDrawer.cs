@@ -43,21 +43,21 @@ namespace emotitron.Compression
 			SerializedProperty pos = property.FindPropertyRelative("posCrusher");
 			SerializedProperty rot = property.FindPropertyRelative("rotCrusher");
 			SerializedProperty scl = property.FindPropertyRelative("sclCrusher");
-			SerializedProperty isExpanded = property.FindPropertyRelative("isExpanded");
+			//SerializedProperty isExpanded = property.FindPropertyRelative("isExpanded");
 
 			float ph = EditorGUI.GetPropertyHeight(pos);
 			float rh = EditorGUI.GetPropertyHeight(rot);
 			float sh = EditorGUI.GetPropertyHeight(scl);
 
-			
+
 			/// Header
 
-			bool _isExpanded = EditorGUI.Foldout(new Rect(r.xMin, currentline, r.width, TITL_HGHT), isExpanded.boolValue, "");
-			if (isExpanded.boolValue != _isExpanded)
-			{
-				isExpanded.boolValue = _isExpanded;
-				property.serializedObject.ApplyModifiedProperties();
-			}
+			property.isExpanded = !EditorGUI.Foldout(new Rect(r.xMin, currentline, r.width, TITL_HGHT), !property.isExpanded, "");
+			//if (isExpanded.boolValue != _isExpanded)
+			//{
+			//	isExpanded.boolValue = _isExpanded;
+			//	property.serializedObject.ApplyModifiedProperties();
+			//}
 
 			EditorGUI.LabelField(new Rect(r.xMin, currentline, r.width - 64, TITL_HGHT), gc);// property.displayName /*new GUIContent("Transform Crusher " + label)*//*, (GUIStyle)"BoldLabel"*/);
 
@@ -83,7 +83,7 @@ namespace emotitron.Compression
 
 			EditorGUI.LabelField(new Rect(paddedleft, currentline, paddedwidth, 16), reusableGC, miniLabelRight);
 
-			if (isExpanded.boolValue)
+			if (!property.isExpanded)
 			{
 
 				Rect ir = r; // EditorGUI.IndentedRect(r);;
@@ -101,7 +101,7 @@ namespace emotitron.Compression
 				/// TRS Element Boxes
 				currentline += TITL_HGHT;
 				//float leftConnectorY = currentline;
-				
+
 
 				DrawSet(r, currentline, ph, pos);
 				currentline += ph + SET_PAD;
@@ -128,7 +128,7 @@ namespace emotitron.Compression
 			//SolidTextures.DrawTexture(new Rect(4, currentline + 4, r.width, h - 12), SolidTextures.lowcontrast2D);
 			//EditorGUI.LabelField(new Rect(2, currentline + 4, 4, h - 12), GUIContent.none, (GUIStyle)"MiniSliderVertical");
 
-			EditorGUI.PropertyField(new Rect(r.xMin, currentline, r.width , h), prop);
+			EditorGUI.PropertyField(new Rect(r.xMin, currentline, r.width, h), prop);
 		}
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -136,9 +136,9 @@ namespace emotitron.Compression
 			float ph = EditorGUI.GetPropertyHeight(property.FindPropertyRelative("posCrusher"));
 			float rh = EditorGUI.GetPropertyHeight(property.FindPropertyRelative("rotCrusher"));
 			float sh = EditorGUI.GetPropertyHeight(property.FindPropertyRelative("sclCrusher"));
-			SerializedProperty isExpanded = property.FindPropertyRelative("isExpanded");
+			//SerializedProperty isExpanded = property.FindPropertyRelative("isExpanded");
 
-			float body = SPACING + (isExpanded.boolValue ? (ph + rh + sh + SET_PAD * 2) + BOUNDING_PADDING * 2 : 0);
+			float body = SPACING + (!property.isExpanded ? (ph + rh + sh + SET_PAD * 2) + BOUNDING_PADDING * 2 : 0);
 			return TITL_HGHT + body/* + BTTM_MARGIN*/;
 		}
 	}
