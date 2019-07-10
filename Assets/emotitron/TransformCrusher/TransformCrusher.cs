@@ -192,12 +192,12 @@ namespace emotitron.Compression
 		}
 
 
-//#if UNITY_EDITOR
-//#pragma warning disable 0414
-//		[SerializeField]
-//		protected bool isExpanded = true;
-//#pragma warning restore 0414
-//#endif
+#if UNITY_EDITOR
+#pragma warning disable 0414
+		[SerializeField]
+		protected bool isExpanded = true;
+#pragma warning restore 0414
+#endif
 
 
 		/// Temporary CompressedMatrix used internally when a non-alloc is not provided and no return CM or M is required.

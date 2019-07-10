@@ -175,9 +175,9 @@ namespace emotitron.Compression
 
 		#region Inspector
 
-		//#if UNITY_EDITOR
-		//		public bool isExpanded = true;
-		//#endif
+#if UNITY_EDITOR
+		public bool isExpanded = true;
+#endif
 		public bool hideFieldName = false;
 
 		[SerializeField] private TRSType _trsType;
@@ -642,7 +642,7 @@ namespace emotitron.Compression
 		}
 
 		#endregion
-
+		
 		#region Indexer
 
 		/// <summary>
@@ -2608,7 +2608,7 @@ namespace emotitron.Compression
 				r.xMin -= unpad; r.xMax += unpad;
 				ir.xMin -= unpad; ir.xMax += unpad;
 			}
-
+			
 
 			//GUI.Box(new Rect(ir.xMin - 2, currentline - 2, ir.width + 4, ir.height - 2), GUIContent.none, (GUIStyle)"GroupBox");
 			//SolidTextures.DrawTexture(new Rect(ir.xMin - 2, currentline -2, ir.width + 4, ir.height), SolidTextures.highcontrast2D);
@@ -2623,8 +2623,8 @@ namespace emotitron.Compression
 			float enumwidth = (ir.width - 99) / 2 - 1;
 			float fcLeft2 = fcLeft + enumwidth + 2;
 
-			property.isExpanded = (isWorldBounds) ? false :
-				!GUI.Toggle(new Rect(ir.xMin + 2, currentline, 16, LINEHEIGHT), !property.isExpanded, GUIContent.none, (GUIStyle)"Foldout");
+			target.isExpanded = (isWorldBounds) ? true :
+				GUI.Toggle(new Rect(ir.xMin + 2, currentline, 16, LINEHEIGHT), target.isExpanded, GUIContent.none, (GUIStyle)"Foldout");
 
 			if (target.enableTRSTypeSelector)
 			{
@@ -2713,7 +2713,7 @@ namespace emotitron.Compression
 				EditorGUI.indentLevel = holdindent;
 			}
 
-			if (!property.isExpanded/* && (target.TRSType != TRSType.Position || !target.useWorldBounds)*/)
+			if (target.isExpanded/* && (target.TRSType != TRSType.Position || !target.useWorldBounds)*/)
 			{
 				currentline += TITL_HGHT + SPACING;
 				bool isSingleElement = (target.TRSType == TRSType.Scale && target.uniformAxes != 0) || (target.TRSType == TRSType.Quaternion);
@@ -2776,10 +2776,11 @@ namespace emotitron.Compression
 			SerializedProperty q = property.FindPropertyRelative("_qcrusher");
 			SerializedProperty useWorldBounds = property.FindPropertyRelative("useWorldBounds");
 			SerializedProperty boundsGroupId = property.FindPropertyRelative("boundsGroupId");
+			SerializedProperty isExpanded = property.FindPropertyRelative("isExpanded");
 			SerializedProperty hideFieldName = property.FindPropertyRelative("hideFieldName");
 
 			bool showHeader = !hideFieldName.boolValue && !(DrawerUtils.GetParent(property) is TransformCrusher);
-			bool isexpanded = !property.isExpanded;
+			bool isexpanded = isExpanded.boolValue /*&& (trsType.intValue != (int)TRSType.Position || !useWorldBounds.boolValue)*/;
 
 			float topAndBottom = PADDING + TITL_HGHT + BTTM_MARGIN + ((showHeader) ? LINEHEIGHT : 0); // + TOP_PAD : TOP_PAD;
 
