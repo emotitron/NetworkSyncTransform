@@ -59,7 +59,7 @@ namespace emotitron.Compression
 				property.serializedObject.ApplyModifiedProperties();
 			}
 
-			EditorGUI.LabelField(new Rect(r.xMin, currentline, r.width - 64, TITL_HGHT), gc);// property.displayName /*new GUIContent("Transform Crusher " + label)*//*, (GUIStyle)"BoldLabel"*/);
+			GUI.Label(new Rect(r.xMin, currentline, r.width - 64, TITL_HGHT), gc);// property.displayName /*new GUIContent("Transform Crusher " + label)*//*, (GUIStyle)"BoldLabel"*/);
 
 			int totalbits = target.TallyBits();
 			int frag0bits = Mathf.Clamp(totalbits, 0, 64);

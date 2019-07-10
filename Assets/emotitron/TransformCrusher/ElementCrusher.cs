@@ -176,7 +176,7 @@ namespace emotitron.Compression
 		#region Inspector
 
 #if UNITY_EDITOR
-		public bool isExpanded = true;
+		public bool isExpanded = false;
 #endif
 		public bool hideFieldName = false;
 
