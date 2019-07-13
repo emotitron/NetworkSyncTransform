@@ -220,9 +220,7 @@ namespace emotitron.Compression
 
 			target.position = Vector3.Lerp(start.position, end.position, t);
 
-			/// TODO: Cache this
-			var rotcrusher = crusher.RotCrusher;
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				target.rotation = Quaternion.Slerp((Quaternion)start.rotation, (Quaternion)end.rotation, t);
 			else
 			{
@@ -262,9 +260,7 @@ namespace emotitron.Compression
 
 			target.position = Vector3.LerpUnclamped(start.position, end.position, t);
 
-			var rotcrusher = crusher.RotCrusher;
-
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
 			else
 			{
@@ -295,9 +291,7 @@ namespace emotitron.Compression
 
 			target.position = CatmulRom.CatmullRomLerp(pre.position, start.position, end.position, post.position, t);
 
-			var rotcrusher = crusher.RotCrusher;
-
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
 			else
 			{
@@ -328,9 +322,7 @@ namespace emotitron.Compression
 
 			target.position = CatmulRom.CatmullRomLerp(pre.position, start.position, end.position, t);
 
-			var rotcrusher = crusher.RotCrusher;
-
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
 			else
 			{
