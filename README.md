@@ -3,13 +3,13 @@
 
 [**NST Free Current Release** - Unity Package Download](https://github.com/emotitron/NetworkSyncTransform/releases)
 
-**With the deprecation of UNET and a LOT of breaking changes currently happening with UNITY 2019, NST likely will NOT be officially supported past Unity 2018.4.** Currently it should be working in 2019 for PUN and Mirror, but I make no promises on that for the long-term. 
+**With the deprecation of UNET and a LOT of breaking changes currently happening with UNITY 2019, NST likely will NOT be officially supported past Unity 2018.4.** Currently it should be working in 2019 for PUN (and possibly Mirror), but I make no promises on that for the long-term. 
 
 **All new development work is going into this library:**
 
 [**Simple Network Sync** - Unity Asset Store](https://assetstore.unity.com/packages/tools/network/simple-network-sync-134256)
 
-Networking HLAPI for Photon PUN/PUN2 , UNet and Mirror. This asset incorporates a circular buffer based transform sync engine, creating very smooth and stable movement replication - even in lossy/jittery real-world network conditions.
+Networking HLAPI for Photon PUN/PUN2 and UNet. This asset incorporates a circular buffer based transform sync engine, creating very smooth and stable movement replication - even in lossy/jittery real-world network conditions.
 
 Additionally, the circular buffer reduces data rates by packaging all outgoing data onto regular network ticks. The bitstream is accessible as well, allowing for additional data to piggyback on these packets - such as health, emotes, timers, etc - rather than uncompressed and adhoc with RPCs/Syncvars.
 
