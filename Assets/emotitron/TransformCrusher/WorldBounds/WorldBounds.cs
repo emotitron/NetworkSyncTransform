@@ -177,6 +177,9 @@ namespace emotitron.Compression
 		float recheckTimer;
 		private void Update()
 		{
+			if (Application.isPlaying)
+				return;
+
 			recheckTimer += Time.deltaTime;
 			if (recheckTimer > 1f)
 			{

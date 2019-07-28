@@ -91,7 +91,17 @@ namespace emotitron.Compression
 		public static bool operator ==(Element a, Element b)
 		{
 			return a.vectorType == b.vectorType &&
-				   (a.vectorType == VectorType.Vector3) ? a.v.Equals(b.v) : a.quat.Equals(b.quat);
+				(a.vectorType == VectorType.Vector3) ?
+					(
+					a.v.x == b.v.x &&
+					a.v.y == b.v.y &&
+					a.v.z == b.v.z
+					) : (
+					a.quat.x == b.quat.x &&
+					a.quat.y == b.quat.y &&
+					a.quat.z == b.quat.z &&
+					a.quat.w == b.quat.w
+					);
 		}
 
 		public static bool operator !=(Element a, Element b)
@@ -107,7 +117,38 @@ namespace emotitron.Compression
 		public bool Equals(Element other)
 		{
 			return vectorType == other.vectorType &&
-				   (vectorType == VectorType.Vector3) ? v.Equals(other.v) : quat.Equals(other.quat);
+				(vectorType == VectorType.Vector3) ?
+					(
+					v.x == other.v.x &&
+					v.y == other.v.y &&
+					v.z == other.v.z
+					) : (
+					quat.x == other.quat.x &&
+					quat.y == other.quat.y &&
+					quat.z == other.quat.z &&
+					quat.w == other.quat.w
+					);
+		}
+
+		public static bool Equals(Vector3 a, Vector3 b)
+		{
+			return
+					(
+					a.x == b.x &&
+					a.y == b.y &&
+					a.z == b.z
+					);
+		}
+
+		public static bool Equals(Quaternion a, Quaternion b)
+		{
+			return
+					(
+					a.x == b.x &&
+					a.y == b.y &&
+					a.z == b.z &&
+					a.w == b.w
+					);
 		}
 
 		#endregion

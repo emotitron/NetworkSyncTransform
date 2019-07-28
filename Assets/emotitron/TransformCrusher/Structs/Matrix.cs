@@ -1,6 +1,8 @@
 ﻿//Copyright 2018, Davin Carten, All rights reserved
 
 using emotitron.Utilities;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace emotitron.Compression
@@ -50,8 +52,7 @@ namespace emotitron.Compression
 			this.scale = (lclscl) ? transform.localScale : transform.lossyScale;
 
 			bool lclrot = (crusher == null || crusher.RotCrusher == null || crusher.RotCrusher.local);
-			var rotcrusher = crusher.RotCrusher;
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				this.rotation = (lclrot) ? transform.localRotation : transform.rotation;
 			else
 				this.rotation = (lclrot) ? transform.localEulerAngles : transform.eulerAngles;
@@ -79,8 +80,7 @@ namespace emotitron.Compression
 			// Not sure the idea option for scale... lossy or local.
 			this.scale = transform.localScale;
 
-			var rotcrusher = crusher.RotCrusher;
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				this.rotation = transform.rotation;
 			else
 				this.rotation = transform.eulerAngles;
@@ -99,8 +99,7 @@ namespace emotitron.Compression
 			// Not sure the idea option for scale... lossy or local.
 			this.scale = transform.localScale;
 
-			var rotcrusher = crusher.RotCrusher;
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				this.rotation = transform.rotation;
 			else
 				this.rotation = transform.eulerAngles;
@@ -121,8 +120,7 @@ namespace emotitron.Compression
 			// Not sure the ideal option for scale... lossy or local.
 			this.scale = rb.transform.localScale;
 
-			var rotcrusher = crusher.RotCrusher;
-			if (crusher != null && rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				this.rotation = rb.rotation;
 			else
 				this.rotation = rb.rotation.eulerAngles;
@@ -138,8 +136,7 @@ namespace emotitron.Compression
 		{
 			this.position = rb.position;
 
-			var rotcrusher = crusher.RotCrusher;
-			if (rotcrusher != null && rotcrusher.TRSType == TRSType.Quaternion)
+			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
 				this.rotation = rb.rotation;
 			else
 				this.rotation = rb.rotation.eulerAngles;
@@ -350,6 +347,7 @@ namespace emotitron.Compression
 		{
 			return "MATRIX pos: " + position + " rot: " + rotation + " scale: " + scale + "  rottype: " + rotation.vectorType;
 		}
+
 	}
 
 
