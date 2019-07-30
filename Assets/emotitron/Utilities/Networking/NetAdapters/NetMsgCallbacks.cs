@@ -11,7 +11,7 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 #elif MIRROR
 using Mirror;
-#elif !UNITY_2019_1_OR_NEWER
+#else
 using UnityEngine.Networking;
 #endif
 
@@ -25,21 +25,36 @@ namespace emotitron.Utilities.Networking
 {
 
 #if !PUN_2_OR_NEWER
-#if !UNITY_2019_1_OR_NEWER || MIRROR
 
 	/// <summary>
 	///  Nonalloc message for Mirror, since we can't directly send writers with Mirror. Set the buffer and length values prior to sending/rcving.
 	/// </summary>
+#if MIRROR_3_12_OR_NEWER
+	public struct BytesMessageNonalloc : IMessageBase
+#else
 	public class BytesMessageNonalloc : MessageBase
+#endif
 	{
+#if MIRROR
+		public readonly static int msgId = MessagePacker.GetId<BytesMessageNonalloc>();
+#endif
 		public readonly static byte[] incomingbuffer = NetMsgSends.reusableIncomingBuffer;
 		public static byte[] outgoingbuffer = NetMsgSends.reusableOutgoingBuffer;
 		public static ushort length;
 
-		public BytesMessageNonalloc() { }
+#if MIRROR_3_12_OR_NEWER
 
+#else
+		public BytesMessageNonalloc() { }
+#endif
+
+#if MIRROR_3_12_OR_NEWER
+		public void Serialize(NetworkWriter writer)
+#else
 		public override void Serialize(NetworkWriter writer)
+#endif
 		{
+
 #if MIRROR
 			writer.Write(outgoingbuffer, 0, length);
 #else
@@ -47,15 +62,19 @@ namespace emotitron.Utilities.Networking
 #endif
 		}
 
+#if MIRROR_3_12_OR_NEWER
+		public void Deserialize(NetworkReader reader)
+#else
 		public override void Deserialize(NetworkReader reader)
+#endif
 		{
 			length = (ushort)(reader.Length - reader.Position);
 			for (int i = 0; i < length; i++)
 				incomingbuffer[i] = reader.ReadByte();
+
 		}
 	}
 
-#endif
 #endif
 
 	public static class NetMsgCallbacks
@@ -176,7 +195,7 @@ namespace emotitron.Utilities.Networking
 
 		#endregion  // END PUN2
 
-#elif MIRROR || !UNITY_2019_1_OR_NEWER  // UNET AND MIRROR
+#else  // UNET AND MIRROR
 
 		public static void RegisterDefaultHandler()
 		{
@@ -185,12 +204,17 @@ namespace emotitron.Utilities.Networking
 
 		private static bool RegisterMessageId(short msgId)
 		{
+
 			/// Make sure network is active, or registering handlers will fail, or they will just be forgotten
 			if (NetworkServer.active)
 			{
 #if MIRROR
-				NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
-				NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+
+				if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+					NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
+
+				if (!NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+					NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
 #else
 				NetworkServer.RegisterHandler(msgId, OnMessage);
 				if (!ReferenceEquals(NetworkManager.singleton.client, null))
@@ -200,15 +224,16 @@ namespace emotitron.Utilities.Networking
 			else if (NetworkClient.active)
 			{
 #if MIRROR
-				NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
-				NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+				if (NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+					NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
+
+				if (!NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+					NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
 #else
 				NetworkServer.UnregisterHandler(msgId);
 				NetworkManager.singleton.client.RegisterHandler(msgId, OnMessage);
 #endif
 			}
-			//else
-			//	return false;
 
 			if (!callbacks.ContainsKey(msgId))
 				callbacks.Add(msgId, new CallbackLists());
@@ -224,7 +249,8 @@ namespace emotitron.Utilities.Networking
 			{
 				if (NetworkServer.active)
 #if MIRROR
-					NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+					if (!NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+						NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
 #else
 					NetworkServer.RegisterHandler(msgId, OnMessage);
 #endif
@@ -235,7 +261,9 @@ namespace emotitron.Utilities.Networking
 			{
 				if (NetworkClient.active)
 #if MIRROR
-					NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+
+					if (!NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+						NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
 #else
 					NetworkManager.singleton.client.RegisterHandler(msgId, OnMessage);
 #endif
@@ -308,10 +336,12 @@ namespace emotitron.Utilities.Networking
 		private static void UnregisterMessageId(int msgId, bool asServer)
 		{
 			if (asServer)
+
 				NetworkServer.UnregisterHandler((short)msgId);
 			else
 #if MIRROR
-				NetworkClient.UnregisterHandler((short)msgId);
+				if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+					NetworkClient.UnregisterHandler((short)msgId);
 #else
 			if (NetworkManager.singleton.client != null)
 				NetworkManager.singleton.client.UnregisterHandler((short)msgId);
@@ -324,7 +354,8 @@ namespace emotitron.Utilities.Networking
 				NetworkServer.UnregisterHandler((short)msgId);
 			if (NetworkClient.active)
 #if MIRROR
-				NetworkClient.UnregisterHandler((short)msgId);
+				if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+					NetworkClient.UnregisterHandler((short)msgId);
 #else
 				if (NetworkManager.singleton.client != null)
 					NetworkManager.singleton.client.UnregisterHandler((short)msgId);
@@ -400,6 +431,7 @@ namespace emotitron.Utilities.Networking
 				for (int i = 0; i < cnt; ++i)
 					bufferCBList[i](conn, conn.connectionId, buffer);
 			}
+
 		}
 #else
 		public static void OnMessage(NetworkMessage msg)
