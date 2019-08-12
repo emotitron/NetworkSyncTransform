@@ -47,7 +47,7 @@ namespace emotitron.Compression
 				return e.quat;
 			else
 			{
-#if UNNTY_EDITOR || DEBUG || DEVELOPMENT_BUILD
+#if UNITY_EDITOR
 				Debug.LogWarning("Casting a Element of type Vector to a Quaternion uses Quaternion.Euler(). Is this intentional? Cast to Vector3 and convert to Quaternion yourself to silence this warning.");
 #endif
 				return Quaternion.Euler(e.v);
@@ -60,7 +60,7 @@ namespace emotitron.Compression
 				return e.v;
 			else
 			{
-#if UNNTY_EDITOR || DEBUG || DEVELOPMENT_BUILD
+#if UNITY_EDITOR
 				Debug.LogWarning("Casting a Element of type Quaternion to a Vector3 uses quaternion.eulerAngles. Is this intentional? Cast to Quaternion and convert to EulerAngles yourself to silence this warning.");
 #endif
 				return e.quat.eulerAngles;

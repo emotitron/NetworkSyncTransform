@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using emotitron.Utilities.GUIUtilities;
 using UnityEngine;
-using emotitron.Debugging;
 using System.Text;
 
 #if UNITY_EDITOR

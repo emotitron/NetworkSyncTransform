@@ -77,8 +77,6 @@ namespace emotitron.Compression
 		//	int bufferlen = buffer.Length;
 		//	if (count > bufferlen)
 		//	{
-		//		//emotitron.Debugging.XDebug.LogError("Supplied buffer is shorter than the NetworkReader buffer, so copy will be limited to " + bufferlen + " bytes");
-		//		emotitron.Debugging.XDebug.LogError("Supplied buffer is shorter than the NetworkReader buffer, so copy will be limited to " + bufferlen + " bytes");
 		//		System.Array.Resize(ref buffer, System.Math.Max(buffer.Length * 2, count));
 
 		//		count = bufferlen;
@@ -105,8 +103,9 @@ namespace emotitron.Compression
 			int bufferlen = buffer.Length;
 			if (count > bufferlen)
 			{
-				//emotitron.Debugging.XDebug.LogError("Supplied buffer is shorter than the NetworkReader buffer, so copy will be limited to " + bufferlen + " bytes");
-				Debugging.XDebug.LogError(!Debugging.XDebug.logErrors ? null : ("Supplied buffer is shorter than the NetworkReader buffer, so copy will be limited to " + bufferlen + " bytes"));
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+				UnityEngine.Debug.LogError("Supplied buffer is shorter than the NetworkReader buffer, so copy will be limited to " + bufferlen + " bytes");
+#endif
 			}
 			for (int i = (int)reader.Position; i < count; ++i)
 			{

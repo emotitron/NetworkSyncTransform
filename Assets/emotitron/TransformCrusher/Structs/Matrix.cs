@@ -217,24 +217,29 @@ namespace emotitron.Compression
 
 			target.position = Vector3.Lerp(start.position, end.position, t);
 
-			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
-				target.rotation = Quaternion.Slerp((Quaternion)start.rotation, (Quaternion)end.rotation, t);
-			else
+			if (crusher != null && crusher.RotCrusher != null)
 			{
-				var srot = (Vector3)start.rotation;
-				var erot = (Vector3)end.rotation;
-				var ydelta = srot.y - erot.y;
-				var zdelta = srot.z - erot.z;
+				if (crusher.RotCrusher.TRSType == TRSType.Quaternion)
+					target.rotation = Quaternion.Slerp((Quaternion)start.rotation, (Quaternion)end.rotation, t);
+				else
+				{
+					var srot = (Vector3)start.rotation;
+					var erot = (Vector3)end.rotation;
+					var ydelta = srot.y - erot.y;
+					var zdelta = srot.z - erot.z;
 
 
-				Vector3 unfucked = new Vector3(
-					erot.x,
-					ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
-					zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
-					);
+					Vector3 unfucked = new Vector3(
+						erot.x,
+						ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
+						zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
+						);
 
-				target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);
+					target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);
+				}
 			}
+			else
+				target.rotation = end.rotation;
 
 			target.scale = Vector3.Lerp(start.scale, end.scale, t);
 
@@ -257,23 +262,28 @@ namespace emotitron.Compression
 
 			target.position = Vector3.LerpUnclamped(start.position, end.position, t);
 
-			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
-				target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
-			else
+			if (crusher != null && crusher.RotCrusher != null)
 			{
-				var srot = (Vector3)start.rotation;
-				var erot = (Vector3)end.rotation;
-				var ydelta = srot.y - erot.y;
-				var zdelta = srot.z - erot.z;
+				if (crusher.RotCrusher.TRSType == TRSType.Quaternion)
+					target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
+				else
+				{
+					var srot = (Vector3)start.rotation;
+					var erot = (Vector3)end.rotation;
+					var ydelta = srot.y - erot.y;
+					var zdelta = srot.z - erot.z;
 
-				Vector3 unfucked = new Vector3(
-					erot.x,
-					ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
-					zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
-					);
+					Vector3 unfucked = new Vector3(
+						erot.x,
+						ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
+						zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
+						);
 
-				target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);
+					target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);
+				}
 			}
+			else
+				target.rotation = end.rotation;
 
 			target.scale = Vector3.LerpUnclamped(start.scale, end.scale, t);
 
@@ -288,23 +298,29 @@ namespace emotitron.Compression
 
 			target.position = CatmulRom.CatmullRomLerp(pre.position, start.position, end.position, post.position, t);
 
-			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
-				target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
-			else
+			if (crusher != null && crusher.RotCrusher != null)
 			{
-				var srot = (Vector3)start.rotation;
-				var erot = (Vector3)end.rotation;
-				var ydelta = srot.y - erot.y;
-				var zdelta = srot.z - erot.z;
+				if (crusher.RotCrusher.TRSType == TRSType.Quaternion)
+					target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
+				else
+				{
+					var srot = (Vector3)start.rotation;
+					var erot = (Vector3)end.rotation;
+					var ydelta = srot.y - erot.y;
+					var zdelta = srot.z - erot.z;
 
-				Vector3 unfucked = new Vector3(
-					erot.x,
-					ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
-					zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
-					);
+					Vector3 unfucked = new Vector3(
+						erot.x,
+						ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
+						zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
+						);
 
-				target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);
+					target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);
+				}
 			}
+			else
+				target.rotation = end.rotation;
+
 
 			target.scale = CatmulRom.CatmullRomLerp(pre.scale, start.scale, end.scale, post.scale, t);
 
@@ -319,23 +335,28 @@ namespace emotitron.Compression
 
 			target.position = CatmulRom.CatmullRomLerp(pre.position, start.position, end.position, t);
 
-			if (crusher != null && crusher.RotCrusher != null && crusher.RotCrusher.TRSType == TRSType.Quaternion)
-				target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
-			else
+			if (crusher != null && crusher.RotCrusher != null)
 			{
-				var srot = (Vector3)start.rotation;
-				var erot = (Vector3)end.rotation;
-				var ydelta = srot.y - erot.y;
-				var zdelta = srot.z - erot.z;
+				if (crusher.RotCrusher.TRSType == TRSType.Quaternion)
+					target.rotation = Quaternion.SlerpUnclamped((Quaternion)start.rotation, (Quaternion)end.rotation, t);
+				else
+				{
+					var srot = (Vector3)start.rotation;
+					var erot = (Vector3)end.rotation;
+					var ydelta = srot.y - erot.y;
+					var zdelta = srot.z - erot.z;
 
-				Vector3 unfucked = new Vector3(
-					erot.x,
-					ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
-					zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
-					);
+					Vector3 unfucked = new Vector3(
+						erot.x,
+						ydelta > 180 ? erot.y + 360 : ydelta < -180 ? erot.y - 360 : erot.y,
+						zdelta > 180 ? erot.z + 360 : zdelta < -180 ? erot.z - 360 : erot.z
+						);
 
-				target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);
+					target.rotation = Vector3.Lerp(srot, (Vector3)unfucked, t);
+				}
 			}
+			else
+				target.rotation = end.rotation;
 
 			target.scale = CatmulRom.CatmullRomLerp(pre.scale, start.scale, end.scale, t);
 
