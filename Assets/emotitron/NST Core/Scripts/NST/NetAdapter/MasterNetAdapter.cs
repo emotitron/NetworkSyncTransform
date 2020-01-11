@@ -1127,8 +1127,12 @@ namespace emotitron.NST
 				/// Mirror (at least Telepathy) needs a dummy handler for Host talking to itself
 #if MIRROR_3_0_OR_NEWER
 				if (NetworkClient.active)
-					if (!NetworkClient.handlers.ContainsKey(masterMsgTypeId))
-						NetworkClient.RegisterHandler<BytesMessageNonalloc>(ReceiveDummy);
+				{
+					NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
+					NetworkClient.RegisterHandler<BytesMessageNonalloc>(ReceiveDummy);
+				}
+				//if (!NetworkClient.handlers.ContainsKey(masterMsgTypeId))
+				//		NetworkClient.RegisterHandler<BytesMessageNonalloc>(ReceiveDummy);
 #elif MIRROR
 				if (NetworkClient.active)
 					if (!NetworkManager.singleton.client.handlers.ContainsKey(masterMsgTypeId))
@@ -1142,8 +1146,12 @@ namespace emotitron.NST
 				///// Unregister just in case of edge cases where Unregister never gets called
 				//NetworkManager.singleton.client.UnregisterHandler(masterMsgTypeId);
 #if MIRROR_3_0_OR_NEWER
-				if (!NetworkClient.handlers.ContainsKey(masterMsgTypeId))
+				{
+					NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
 					NetworkClient.RegisterHandler<BytesMessageNonalloc>(ReceiveUpdate);
+				}
+				//if (!NetworkClient.handlers.ContainsKey(masterMsgTypeId))
+				//	NetworkClient.RegisterHandler<BytesMessageNonalloc>(ReceiveUpdate);
 #else
 				if (!NetworkManager.singleton.client.handlers.ContainsKey(masterMsgTypeId))
 					NetworkManager.singleton.client.RegisterHandler(masterMsgTypeId, ReceiveUpdate);

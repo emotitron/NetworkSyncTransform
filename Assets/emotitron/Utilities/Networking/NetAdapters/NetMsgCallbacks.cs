@@ -210,11 +210,16 @@ namespace emotitron.Utilities.Networking
 			{
 #if MIRROR
 
-				if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
-					NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
+				NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
 
-				if (!NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
-					NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+				NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
+				NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+
+				//if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+				//	NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
+
+				//if (!NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+				//	NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
 #else
 				NetworkServer.RegisterHandler(msgId, OnMessage);
 				if (!ReferenceEquals(NetworkManager.singleton.client, null))
@@ -224,11 +229,17 @@ namespace emotitron.Utilities.Networking
 			else if (NetworkClient.active)
 			{
 #if MIRROR
-				if (NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
-					NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
 
-				if (!NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
-					NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+				NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
+
+				NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
+				NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+
+				//if (NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+				//	NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
+
+				//if (!NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+				//	NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
 #else
 				NetworkServer.UnregisterHandler(msgId);
 				NetworkManager.singleton.client.RegisterHandler(msgId, OnMessage);
@@ -249,8 +260,12 @@ namespace emotitron.Utilities.Networking
 			{
 				if (NetworkServer.active)
 #if MIRROR
-					if (!NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
-						NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+				{
+					NetworkServer.UnregisterHandler<BytesMessageNonalloc>();
+					NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+					//if (!NetworkServer.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+					//	NetworkServer.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+				}
 #else
 					NetworkServer.RegisterHandler(msgId, OnMessage);
 #endif
@@ -261,9 +276,13 @@ namespace emotitron.Utilities.Networking
 			{
 				if (NetworkClient.active)
 #if MIRROR
+				{
+					NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
+					NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+					//if (!NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+					//	NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
+				}
 
-					if (!NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
-						NetworkClient.RegisterHandler<BytesMessageNonalloc>(OnMessage);
 #else
 					NetworkManager.singleton.client.RegisterHandler(msgId, OnMessage);
 #endif
@@ -340,8 +359,9 @@ namespace emotitron.Utilities.Networking
 				NetworkServer.UnregisterHandler((short)msgId);
 			else
 #if MIRROR
-				if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
-					NetworkClient.UnregisterHandler((short)msgId);
+				NetworkClient.UnregisterHandler<BytesMessageNonalloc>();	
+				//if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+				//	NetworkClient.UnregisterHandler((short)msgId);
 #else
 			if (NetworkManager.singleton.client != null)
 				NetworkManager.singleton.client.UnregisterHandler((short)msgId);
@@ -354,11 +374,12 @@ namespace emotitron.Utilities.Networking
 				NetworkServer.UnregisterHandler((short)msgId);
 			if (NetworkClient.active)
 #if MIRROR
-				if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
-					NetworkClient.UnregisterHandler((short)msgId);
+				NetworkClient.UnregisterHandler<BytesMessageNonalloc>();
+				//if (NetworkClient.handlers.ContainsKey(BytesMessageNonalloc.msgId))
+				//	NetworkClient.UnregisterHandler((short)msgId);
 #else
-				if (NetworkManager.singleton.client != null)
-					NetworkManager.singleton.client.UnregisterHandler((short)msgId);
+			if (NetworkManager.singleton.client != null)
+				NetworkManager.singleton.client.UnregisterHandler((short)msgId);
 #endif
 		}
 

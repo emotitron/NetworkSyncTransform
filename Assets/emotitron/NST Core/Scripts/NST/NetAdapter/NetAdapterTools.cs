@@ -597,6 +597,7 @@ namespace emotitron.NST
 
 		public static void EnsureNMPlayerPrefabIsLocalAuthority(NetworkManager nm)
 		{
+#if !MIRROR
 			if (nm && nm.playerPrefab)
 			{
 				NetworkIdentity ni = nm.playerPrefab.GetComponent<NetworkIdentity>();
@@ -607,6 +608,7 @@ namespace emotitron.NST
 					EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
 				}
 			}
+#endif
 		}
 
 #endif
